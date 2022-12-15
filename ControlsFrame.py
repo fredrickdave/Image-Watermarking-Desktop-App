@@ -56,3 +56,6 @@ class ControlsFrame(customtkinter.CTkFrame):
 
         self.choose_watermark_btn = customtkinter.CTkButton(self, text="Choose Watermark")
         self.choose_watermark_btn.grid(row=10, column=0, padx=10, pady=10)
+
+        self.delete_image_btn = customtkinter.CTkButton(self, text="Delete", state="disabled")
+        self.delete_image_btn.grid(row=11, column=0, padx=10, pady=10)

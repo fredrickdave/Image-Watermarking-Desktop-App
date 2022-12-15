@@ -26,9 +26,6 @@ class App(customtkinter.CTk):
         # {"path": {"rotate": 0, "transparency": 0, "imagetk": None}
         self.image_dictionary = {}
 
-        # new_image_paths stores paths of any new image that doesn't exists in image_path_list
-        self.new_image_paths = {}
-
         # Stores path of image currently shown in the watermark preview frame
         self.current_image_path = None
 
@@ -48,6 +45,7 @@ class App(customtkinter.CTk):
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
         self.controls_frame.save_location.configure(command=self.update_save_location)
         self.controls_frame.choose_watermark_btn.configure(command=self.choose_watermark)
+        self.controls_frame.delete_image_btn.configure(command=self.delete_image)
         self.controls_frame.grid(row=0, column=0, rowspan=2, padx=20, pady=20, sticky="nsew")
 
         # Set watermark position radiobuttons' command to update watermark preview frame
@@ -81,9 +79,8 @@ class App(customtkinter.CTk):
 
         # Check if user added image(s). If none, exit this function
         if self.file_paths != []:
-            self.new_image_paths.clear()
             for path in self.file_paths:
-                # Check for duplicates and save any new paths to new_image_paths
+                # Check for duplicates and save any new paths to image_dictionary
                 if path not in self.image_dictionary:
                     i = Image.open(path)
                     i.thumbnail(THUMBNAIL_SIZE)
@@ -91,6 +88,7 @@ class App(customtkinter.CTk):
                 else:
                     print("Duplicate, skipped!")
             self.controls_frame.delete_all_image_btn.configure(state="active")
+            self.controls_frame.delete_image_btn.configure(state="active")
 
         else:
             print("No Image was added")
@@ -107,7 +105,6 @@ class App(customtkinter.CTk):
         print("End of Select Image method")
 
     def delete_all_image(self):
-        self.imagetk_list.clear()
         self.image_dictionary.clear()
         self.current_image_path = None
         self.image_preview_frame.destroy()
@@ -115,13 +112,44 @@ class App(customtkinter.CTk):
         self.create_image_preview_frame()
         self.create_watermark_preview_frame()
         self.controls_frame.delete_all_image_btn.configure(state="disabled")
+        self.controls_frame.delete_image_btn.configure(state="disabled")
         print("Removed All Images")
+
+    def delete_image(self):
+        # Get key/path of image next to the current image that will be deleted
+        self.next_image = None
+        self.previous_image = None
+        temp_dictionary = iter(self.image_dictionary)
+        for image_path in temp_dictionary:
+            if image_path == self.current_image_path:
+                print("Current Image", image_path)
+                self.next_image = next(temp_dictionary, None)
+                print("Next Image", self.next_image)
+                break
+            self.previous_image = image_path
+        print("Previous Image", self.previous_image)
+        self.image_dictionary.pop(self.current_image_path)
+
+        if self.next_image:
+            self.current_image_path = self.next_image
+        # If next_image is empty and image_dictionary is not empty, set current_image_path to the
+        # new last image in image_dictionary
+        elif not self.next_image and self.image_dictionary:
+            self.current_image_path = self.previous_image
+        else:
+            self.current_image_path = None
+            self.controls_frame.delete_all_image_btn.configure(state="disabled")
+            self.controls_frame.delete_image_btn.configure(state="disabled")
+
+        self.update_image_list_preview()
+        self.update_watermark_preview(self.current_image_path)
+        print(self.current_image_path)
 
     def update_watermark_preview(self, image_path):
         self.watermark_preview_frame.destroy()
         self.create_watermark_preview_frame()
         # print("Image Path", image_path)
-        # Exit function if image_path is empty
+        # Exit function if passed image_path is empty/None value
         if not image_path:
             print(f"Stopped update_watermark_preview. current image is {image_path}")
             return
