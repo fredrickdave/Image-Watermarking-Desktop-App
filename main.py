@@ -22,18 +22,12 @@ class App(customtkinter.CTk):
         self.minsize(300, 200)
         self.resizable(width=False, height=False)
 
-        # image_path_list stores file paths of all added images
-        self.image_path_list = []
-
-        # Store image path and associated attributes
-        # [{"path": {"rotate": False, "transparency": 0}}, ]
-        self.image_list = []
+        # Store image path and associated attributes using the format below
+        # {"path": {"rotate": 0, "transparency": 0, "imagetk": None}
+        self.image_dictionary = {}
 
         # new_image_paths stores paths of any new image that doesn't exists in image_path_list
-        self.new_image_paths = []
-
-        # imagetk_list stores PhotoImage object that can be used in the Image Preview window
-        self.imagetk_list = []
+        self.new_image_paths = {}
 
         # Stores path of image currently shown in the watermark preview frame
         self.current_image_path = None
@@ -90,14 +84,14 @@ class App(customtkinter.CTk):
             self.new_image_paths.clear()
             for path in self.file_paths:
                 # Check for duplicates and save any new paths to new_image_paths
-                if path not in self.image_path_list:
-                    self.new_image_paths.append(path)
+                if path not in self.image_dictionary:
+                    self.new_image_paths[path] = {"rotate": 0, "transparency": 0, "imagetk": None}
                 else:
                     print("Duplicate, skipped!")
 
-            # Add all new file paths to image_path_list. If no new file, exit function
-            if self.new_image_paths != []:
-                self.image_path_list.extend(self.new_image_paths)
+            # Add all new file paths to image dictionary. If no new file, exit function
+            if self.new_image_paths != {}:
+                self.image_dictionary.update(self.new_image_paths)
             else:
                 return None
 
@@ -109,24 +103,24 @@ class App(customtkinter.CTk):
 
         # Only add new paths from new_image_paths to avoid duplicates in imagetk_list, convert it to thumbnail size,
         # and add it to imagetk_list
-        for path in self.new_image_paths:
+        for path in self.new_image_paths.keys():
+            print("key", path)
             i = Image.open(path)
             i.thumbnail(THUMBNAIL_SIZE)
-            self.imagetk_list.append(ImageTk.PhotoImage(i))
+            self.image_dictionary[path]["imagetk"] = ImageTk.PhotoImage(i)
 
         # Set default current_image_path to the 1st image if it's first time importing image(s)
         if not self.current_image_path:
-            self.current_image_path = self.image_path_list[0]
+            self.current_image_path = list(self.image_dictionary.keys())[0]
 
         self.update_image_list_preview()
         self.update_watermark_preview(self.current_image_path)
         # self.update_status_bar()
-
         print("End of Select Image method")
 
     def delete_all_image(self):
         self.imagetk_list.clear()
-        self.image_path_list.clear()
+        self.image_dictionary.clear()
         self.current_image_path = None
         self.image_preview_frame.destroy()
         self.watermark_preview_frame.destroy()
@@ -172,13 +166,13 @@ class App(customtkinter.CTk):
         # FIXME - Correct image is not updating properly in watermark preview frame - FIXED
         # Solution found at:
         # https://stackoverflow.com/questions/10865116/tkinter-creating-buttons-in-for-loop-passing-command-arguments
-        for index, image in enumerate(self.imagetk_list):
+        for index, path in enumerate(self.image_dictionary.keys()):
             Button(
                 self.image_preview_frame,
-                image=image,
+                image=self.image_dictionary[path].get("imagetk"),
                 text="",
                 borderwidth=0,
-                command=lambda path=self.image_path_list[index]: self.update_watermark_preview(path),
+                command=lambda path=path: self.update_watermark_preview(path),
             ).grid(row=0, column=index, padx=10, pady=5)
 
     def choose_watermark(self):
