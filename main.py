@@ -85,29 +85,16 @@ class App(customtkinter.CTk):
             for path in self.file_paths:
                 # Check for duplicates and save any new paths to new_image_paths
                 if path not in self.image_dictionary:
-                    self.new_image_paths[path] = {"rotate": 0, "transparency": 0, "imagetk": None}
+                    i = Image.open(path)
+                    i.thumbnail(THUMBNAIL_SIZE)
+                    self.image_dictionary[path] = {"rotate": 0, "transparency": 0, "imagetk": ImageTk.PhotoImage(i)}
                 else:
                     print("Duplicate, skipped!")
-
-            # Add all new file paths to image dictionary. If no new file, exit function
-            if self.new_image_paths != {}:
-                self.image_dictionary.update(self.new_image_paths)
-            else:
-                return None
-
             self.controls_frame.delete_all_image_btn.configure(state="active")
 
         else:
             print("No Image was added")
             return None
-
-        # Only add new paths from new_image_paths to avoid duplicates in imagetk_list, convert it to thumbnail size,
-        # and add it to imagetk_list
-        for path in self.new_image_paths.keys():
-            print("key", path)
-            i = Image.open(path)
-            i.thumbnail(THUMBNAIL_SIZE)
-            self.image_dictionary[path]["imagetk"] = ImageTk.PhotoImage(i)
 
         # Set default current_image_path to the 1st image if it's first time importing image(s)
         if not self.current_image_path:
@@ -115,6 +102,7 @@ class App(customtkinter.CTk):
 
         self.update_image_list_preview()
         self.update_watermark_preview(self.current_image_path)
+        print(self.image_dictionary)
         # self.update_status_bar()
         print("End of Select Image method")
 
