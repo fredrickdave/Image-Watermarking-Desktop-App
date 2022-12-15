@@ -25,6 +25,10 @@ class App(customtkinter.CTk):
         # image_path_list stores file paths of all added images
         self.image_path_list = []
 
+        # Store image path and associated attributes
+        # [{"path": {"rotate": False, "transparency": 0}}, ]
+        self.image_list = []
+
         # new_image_paths stores paths of any new image that doesn't exists in image_path_list
         self.new_image_paths = []
 
@@ -46,7 +50,7 @@ class App(customtkinter.CTk):
 
         self.controls_frame = ControlsFrame()
         self.controls_frame.add_image_btn.configure(command=self.add_image)
-        self.controls_frame.delete_image_btn.configure(command=self.remove_all_image)
+        self.controls_frame.delete_all_image_btn.configure(command=self.delete_all_image)
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
         self.controls_frame.save_location.configure(command=self.update_save_location)
         self.controls_frame.choose_watermark_btn.configure(command=self.choose_watermark)
@@ -56,7 +60,7 @@ class App(customtkinter.CTk):
         for buttons in self.controls_frame.radiobuttons:
             buttons.configure(command=lambda: self.update_watermark_preview(self.current_image_path))
 
-        # Create image frames on the app window by calling these 2 methods
+        # Create initial image frames on the app window by calling these 2 methods
         self.create_watermark_preview_frame()
         self.create_image_preview_frame()
 
@@ -97,7 +101,7 @@ class App(customtkinter.CTk):
             else:
                 return None
 
-            self.controls_frame.delete_image_btn.configure(state="active")
+            self.controls_frame.delete_all_image_btn.configure(state="active")
 
         else:
             print("No Image was added")
@@ -120,7 +124,7 @@ class App(customtkinter.CTk):
 
         print("End of Select Image method")
 
-    def remove_all_image(self):
+    def delete_all_image(self):
         self.imagetk_list.clear()
         self.image_path_list.clear()
         self.current_image_path = None
@@ -128,7 +132,7 @@ class App(customtkinter.CTk):
         self.watermark_preview_frame.destroy()
         self.create_image_preview_frame()
         self.create_watermark_preview_frame()
-        self.controls_frame.delete_image_btn.configure(state="disabled")
+        self.controls_frame.delete_all_image_btn.configure(state="disabled")
         print("Removed All Images")
 
     def update_watermark_preview(self, image_path):
@@ -183,12 +187,13 @@ class App(customtkinter.CTk):
 
     def apply_watermark(self, image_path):
         self.original_image = Image.open(image_path)
-
         self.original_image_width, self.original_image_height = self.original_image.size
-        print(f"Original image Width: {self.original_image_width}, Height: {self.original_image_height}")
+
         self.watermark = Image.open(self.current_watermark_path)
-        # Adjust watermark size based on the watermark_size value chosen by user. Default is 300px
+        # Adjust watermark size to be pasted based on the watermark_size value chosen by user. Default is 300px
         self.watermark.thumbnail(self.watermark_size)
+
+        print(f"Original image Width: {self.original_image_width}, Height: {self.original_image_height}")
         print("Watermark Position", self.adjust_watermark_position())
         self.original_image.paste(self.watermark, self.adjust_watermark_position())
         return self.original_image
@@ -197,7 +202,7 @@ class App(customtkinter.CTk):
         # tkinter slider command argument automatically pass in the slider value, so size parameter accepts it
         self.watermark_size = (int(size), int(size))
 
-        print("Watermark Size", self.watermark.size)
+        print("Watermark Size", self.watermark_size)
         self.update_watermark_preview(self.current_image_path)
 
     def adjust_watermark_position(self):

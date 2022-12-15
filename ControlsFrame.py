@@ -7,8 +7,8 @@ class ControlsFrame(customtkinter.CTkFrame):
 
         self.add_image_btn = customtkinter.CTkButton(self, text="Add Image(s)")
         self.add_image_btn.grid(row=0, column=0, padx=10, pady=10)
-        self.delete_image_btn = customtkinter.CTkButton(self, text="Delete All", state="disabled")
-        self.delete_image_btn.grid(row=0, column=1, padx=10, pady=10)
+        self.delete_all_image_btn = customtkinter.CTkButton(self, text="Delete All", state="disabled")
+        self.delete_all_image_btn.grid(row=0, column=1, padx=10, pady=10)
 
         # Radiobuttons - Watermark Position
         self.position_label = customtkinter.CTkLabel(self, text="Watermark Position:")
