@@ -46,6 +46,7 @@ class App(customtkinter.CTk):
         self.controls_frame.save_location.configure(command=self.choose_save_location)
         self.controls_frame.choose_watermark_btn.configure(command=self.choose_watermark)
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
+        self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
         self.controls_frame.save_location_entry.configure(state="normal")
         self.controls_frame.save_location_entry.insert(0, self.save_location)
         self.controls_frame.save_location_entry.configure(state="readonly")
@@ -117,6 +118,23 @@ class App(customtkinter.CTk):
         self.controls_frame.delete_all_image_btn.configure(state="disabled")
         self.controls_frame.delete_image_btn.configure(state="disabled")
         print("Removed All Images")
+
+    def rotate_image(self):
+        # Update angle value of current image
+        current_angle = self.image_dictionary[self.current_image_path]["rotate"]
+        if current_angle < 270:
+            self.image_dictionary[self.current_image_path]["rotate"] = current_angle + 90
+        else:
+            self.image_dictionary[self.current_image_path]["rotate"] = 0
+
+        # Update imagetk value to the rotated image
+        current_angle = self.image_dictionary[self.current_image_path]["rotate"]
+        original_image = Image.open(self.current_image_path)
+        original_image.thumbnail(THUMBNAIL_SIZE)
+        rotated_image = original_image.rotate(angle=current_angle, expand=True)
+        self.image_dictionary[self.current_image_path]["imagetk"] = ImageTk.PhotoImage(rotated_image)
+        # print(self.image_dictionary[self.current_image_path])
+        self.update_image_list_preview()
 
     def delete_image(self):
         # Get key/path of image next to the current image that will be deleted

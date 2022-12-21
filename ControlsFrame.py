@@ -71,3 +71,5 @@ class ControlsFrame(customtkinter.CTkFrame):
         )
         self.delete_image_btn = customtkinter.CTkButton(self, text="Delete", state="disabled")
         self.delete_image_btn.grid(row=12, column=0, padx=10, pady=10)
+        self.rotate_image_btn = customtkinter.CTkButton(self, text="Rotate")
+        self.rotate_image_btn.grid(row=12, column=1, padx=10, pady=10)
