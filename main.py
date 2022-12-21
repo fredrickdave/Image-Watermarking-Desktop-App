@@ -135,6 +135,7 @@ class App(customtkinter.CTk):
         self.image_dictionary[self.current_image_path]["imagetk"] = ImageTk.PhotoImage(rotated_image)
         # print(self.image_dictionary[self.current_image_path])
         self.update_image_list_preview()
+        self.update_watermark_preview(self.current_image_path)
 
     def delete_image(self):
         # Get key/path of image next to the current image that will be deleted
@@ -182,10 +183,16 @@ class App(customtkinter.CTk):
         if not self.current_watermark_path:
             self.result = Image.open(self.current_image_path)
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
+            current_angle = self.image_dictionary[self.current_image_path]["rotate"]
+            if current_angle > 0:
+                self.result = self.result.rotate(angle=current_angle, expand=True)
             print("No chosen watermark yet")
         else:
             self.result = self.apply_watermark(image_path=self.current_image_path)
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
+            current_angle = self.image_dictionary[self.current_image_path]["rotate"]
+            if current_angle > 0:
+                self.result = self.result.rotate(angle=current_angle, expand=True)
 
         self.imagetk = ImageTk.PhotoImage(self.result)
         self.preview_image = customtkinter.CTkLabel(
