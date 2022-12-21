@@ -190,9 +190,6 @@ class App(customtkinter.CTk):
         else:
             self.result = self.apply_watermark(image_path=self.current_image_path)
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
-            current_angle = self.image_dictionary[self.current_image_path]["rotate"]
-            if current_angle > 0:
-                self.result = self.result.rotate(angle=current_angle, expand=True)
 
         self.imagetk = ImageTk.PhotoImage(self.result)
         self.preview_image = customtkinter.CTkLabel(
@@ -230,8 +227,11 @@ class App(customtkinter.CTk):
 
     def apply_watermark(self, image_path):
         self.original_image = Image.open(image_path)
-        self.original_image_width, self.original_image_height = self.original_image.size
+        current_angle = self.image_dictionary[self.current_image_path]["rotate"]
+        if current_angle > 0:
+            self.original_image = self.original_image.rotate(angle=current_angle, expand=True)
 
+        self.original_image_width, self.original_image_height = self.original_image.size
         self.watermark = Image.open(self.current_watermark_path)
         # Adjust watermark size to be pasted based on the watermark_size value chosen by user. Default is 300px
         self.watermark.thumbnail(self.watermark_size)
