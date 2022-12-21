@@ -196,7 +196,12 @@ class App(customtkinter.CTk):
 
     def choose_watermark(self):
         self.current_watermark_path = askopenfilename(title="Choose the watermark image you want to use")
-        self.update_watermark_preview(self.current_image_path)
+        if self.current_watermark_path:
+            self.controls_frame.watermark_location_entry.configure(state="normal")
+            self.controls_frame.watermark_location_entry.delete(0, "end")
+            self.controls_frame.watermark_location_entry.insert(0, self.current_watermark_path)
+            self.controls_frame.watermark_location_entry.configure(state="readonly")
+            self.update_watermark_preview(self.current_image_path)
 
     def apply_watermark(self, image_path):
         self.original_image = Image.open(image_path)

@@ -12,7 +12,7 @@ class ControlsFrame(customtkinter.CTkFrame):
 
         # Radiobuttons - Watermark Position
         self.position_label = customtkinter.CTkLabel(self, text="Watermark Position:")
-        self.position_label.grid(row=1, column=0, padx=10, pady=10)
+        self.position_label.grid(row=1, column=0)
         self.modes = [
             ("Bottom-Left", "bottom-left"),
             ("Top-Left", "top-left"),
@@ -35,7 +35,7 @@ class ControlsFrame(customtkinter.CTkFrame):
             self.radiobuttons.append(self.watermark_pos_radiobutton)
 
         for item in self.radiobuttons:
-            item.grid(row=row, column=0, padx=10, pady=10, stick="w")
+            item.grid(row=row, column=0, padx=20, pady=5, stick="w")
             row += 1
 
         self.watermark_size_slider = customtkinter.CTkSlider(self, from_=100, to=700, orient="horizontal")
@@ -45,7 +45,7 @@ class ControlsFrame(customtkinter.CTkFrame):
         self.save_location = customtkinter.CTkButton(self, text="Save Location")
         self.save_location.grid(row=8, column=0, padx=10, pady=10)
         self.save_location_entry = customtkinter.CTkEntry(
-            self, placeholder_text="/output", width=300, text_color="blue", state="readonly"
+            self, placeholder_text="/output", width=300, state="readonly"
         )
         self.save_location_entry.grid(
             row=9,
@@ -58,6 +58,16 @@ class ControlsFrame(customtkinter.CTkFrame):
 
         self.choose_watermark_btn = customtkinter.CTkButton(self, text="Choose Watermark")
         self.choose_watermark_btn.grid(row=10, column=0, padx=10, pady=10)
-
+        self.watermark_location_entry = customtkinter.CTkEntry(
+            self, placeholder_text="", width=300, state="readonly"
+        )
+        self.watermark_location_entry.grid(
+            row=11,
+            column=0,
+            columnspan=2,
+            padx=10,
+            pady=(0, 10),
+            sticky="w",
+        )
         self.delete_image_btn = customtkinter.CTkButton(self, text="Delete", state="disabled")
-        self.delete_image_btn.grid(row=11, column=0, padx=10, pady=10)
+        self.delete_image_btn.grid(row=12, column=0, padx=10, pady=10)
