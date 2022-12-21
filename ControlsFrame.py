@@ -44,13 +44,15 @@ class ControlsFrame(customtkinter.CTkFrame):
 
         self.save_location = customtkinter.CTkButton(self, text="Save Location")
         self.save_location.grid(row=8, column=0, padx=10, pady=10)
-        self.save_location_label = customtkinter.CTkLabel(self, text="test", anchor="w")
-        self.save_location_label.grid(
+        self.save_location_entry = customtkinter.CTkEntry(
+            self, placeholder_text="/output", width=300, text_color="blue", state="readonly"
+        )
+        self.save_location_entry.grid(
             row=9,
             column=0,
             columnspan=2,
             padx=10,
-            pady=10,
+            pady=(0, 10),
             sticky="w",
         )
 

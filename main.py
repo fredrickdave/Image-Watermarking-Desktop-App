@@ -43,9 +43,12 @@ class App(customtkinter.CTk):
         self.controls_frame.add_image_btn.configure(command=self.add_image)
         self.controls_frame.delete_all_image_btn.configure(command=self.delete_all_image)
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
-        self.controls_frame.save_location.configure(command=self.update_save_location)
+        self.controls_frame.save_location.configure(command=self.choose_save_location)
         self.controls_frame.choose_watermark_btn.configure(command=self.choose_watermark)
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
+        self.controls_frame.save_location_entry.configure(state="normal")
+        self.controls_frame.save_location_entry.insert(0, self.save_location)
+        self.controls_frame.save_location_entry.configure(state="readonly")
         self.controls_frame.grid(row=0, column=0, rowspan=2, padx=20, pady=20, sticky="nsew")
 
         # Set watermark position radiobuttons' command to update watermark preview frame
@@ -237,10 +240,16 @@ class App(customtkinter.CTk):
                 round(self.original_image_height * 0.50 - (self.watermark.size[1] * 0.50)),
             )
 
-    def update_save_location(self):
-        self.save_location = askdirectory(title="Select the directory where you want the watermarked images saved")
-        print(self.save_location)
-        self.controls_frame.save_location_label.configure(text=self.save_location)
+    def choose_save_location(self):
+        self.save_location = askdirectory(title="Choose Save Folder location")
+        if self.save_location:
+            print(self.save_location)
+            self.controls_frame.save_location_entry.configure(state="normal")
+            self.controls_frame.save_location_entry.delete(0, "end")
+            self.controls_frame.save_location_entry.insert(0, self.save_location)
+            self.controls_frame.save_location_entry.configure(state="readonly")
+        else:
+            print("Clicked cancel")
 
 
 if __name__ == "__main__":
