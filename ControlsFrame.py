@@ -42,11 +42,14 @@ class ControlsFrame(customtkinter.CTkFrame):
         self.watermark_size_slider.set(300)
         self.watermark_size_slider.grid(row=7, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
+        # Opacity Slider value is based on percentage
+        self.watermark_opacity_slider = customtkinter.CTkSlider(self, from_=10, to=100, orient="horizontal")
+        self.watermark_opacity_slider.set(100)
+        self.watermark_opacity_slider.grid(row=13, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+
         self.save_location = customtkinter.CTkButton(self, text="Save Location")
         self.save_location.grid(row=8, column=0, padx=10, pady=10)
-        self.save_location_entry = customtkinter.CTkEntry(
-            self, placeholder_text="/output", width=300, state="readonly"
-        )
+        self.save_location_entry = customtkinter.CTkEntry(self, placeholder_text="/output", width=300, state="readonly")
         self.save_location_entry.grid(
             row=9,
             column=0,
@@ -58,9 +61,7 @@ class ControlsFrame(customtkinter.CTkFrame):
 
         self.choose_watermark_btn = customtkinter.CTkButton(self, text="Choose Watermark")
         self.choose_watermark_btn.grid(row=10, column=0, padx=10, pady=10)
-        self.watermark_location_entry = customtkinter.CTkEntry(
-            self, placeholder_text="", width=300, state="readonly"
-        )
+        self.watermark_location_entry = customtkinter.CTkEntry(self, placeholder_text="", width=300, state="readonly")
         self.watermark_location_entry.grid(
             row=11,
             column=0,

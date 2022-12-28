@@ -36,6 +36,9 @@ class App(customtkinter.CTk):
         self.watermark_size = (300, 300)
         self.watermark_margin = 40
 
+        # Set default watermark opacity
+        self.watermark_opacity = 100
+
         # Set default save location for watermarked images
         self.save_location = "/output"
 
@@ -43,6 +46,7 @@ class App(customtkinter.CTk):
         self.controls_frame.add_image_btn.configure(command=self.add_image)
         self.controls_frame.delete_all_image_btn.configure(command=self.delete_all_image)
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
+        self.controls_frame.watermark_opacity_slider.configure(command=self.adjust_watermark_opacity)
         self.controls_frame.save_location.configure(command=self.choose_save_location)
         self.controls_frame.choose_watermark_btn.configure(command=self.choose_watermark)
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
@@ -188,7 +192,7 @@ class App(customtkinter.CTk):
                 self.result = self.result.rotate(angle=current_angle, expand=True)
             print("No chosen watermark yet")
         else:
-            self.result = self.apply_watermark(image_path=self.current_image_path)
+            self.result = self.apply_watermark()
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
 
         self.imagetk = ImageTk.PhotoImage(self.result)
@@ -225,27 +229,47 @@ class App(customtkinter.CTk):
             self.controls_frame.watermark_location_entry.configure(state="readonly")
             self.update_watermark_preview(self.current_image_path)
 
-    def apply_watermark(self, image_path):
-        self.original_image = Image.open(image_path)
+    def apply_watermark(self):
+        self.original_image = Image.open(self.current_image_path)
         current_angle = self.image_dictionary[self.current_image_path]["rotate"]
         if current_angle > 0:
             self.original_image = self.original_image.rotate(angle=current_angle, expand=True)
 
         self.original_image_width, self.original_image_height = self.original_image.size
         self.watermark = Image.open(self.current_watermark_path)
+        # self.watermark.putalpha(self.watermark_opacity)
+
         # Adjust watermark size to be pasted based on the watermark_size value chosen by user. Default is 300px
         self.watermark.thumbnail(self.watermark_size)
 
+        # Adjust watermark opacity on a percent scale
+        if self.watermark.mode != "RGBA":
+            alpha = Image.new("L", self.watermark.size, 255)
+            self.watermark.putalpha(alpha)
+        paste_mask = self.watermark.split()[3].point(lambda i: i * self.watermark_opacity / 100.0)
+
+        print("Watermark Mode", self.watermark.mode)
+
         print(f"Original image Width: {self.original_image_width}, Height: {self.original_image_height}")
         print("Watermark Position", self.adjust_watermark_position())
-        self.original_image.paste(self.watermark, self.adjust_watermark_position())
-        return self.original_image
+        self.watermarked_image = Image.new(
+            mode="RGBA", size=(self.original_image_width, self.original_image_height), color=(0, 0, 0, 0)
+        )
+        self.watermarked_image.paste(self.original_image, (0, 0))
+        self.watermarked_image.paste(self.watermark, self.adjust_watermark_position(), mask=paste_mask)
+        return self.watermarked_image
 
     def adjust_watermark_size(self, size):
         # tkinter slider command argument automatically pass in the slider value, so size parameter accepts it
         self.watermark_size = (int(size), int(size))
 
         print("Watermark Size", self.watermark_size)
+        self.update_watermark_preview(self.current_image_path)
+
+    def adjust_watermark_opacity(self, opacity):
+        # tkinter slider command argument automatically pass in the slider value, so opacity parameter accepts it
+        self.watermark_opacity = int(opacity)
+        print("Watermark Opacity", self.watermark_opacity)
         self.update_watermark_preview(self.current_image_path)
 
     def adjust_watermark_position(self):
