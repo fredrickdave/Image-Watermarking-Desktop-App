@@ -38,12 +38,16 @@ class ControlsFrame(customtkinter.CTkFrame):
             item.grid(row=row, column=0, padx=20, pady=5, stick="w")
             row += 1
 
-        self.watermark_size_slider = customtkinter.CTkSlider(self, from_=100, to=700, orient="horizontal")
+        self.watermark_size_slider = customtkinter.CTkSlider(
+            self, from_=100, to=700, orient="horizontal", state="disabled"
+        )
         self.watermark_size_slider.set(300)
         self.watermark_size_slider.grid(row=7, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
         # Opacity Slider value is based on percentage
-        self.watermark_opacity_slider = customtkinter.CTkSlider(self, from_=10, to=100, orient="horizontal")
+        self.watermark_opacity_slider = customtkinter.CTkSlider(
+            self, from_=10, to=100, orient="horizontal", state="disabled"
+        )
         self.watermark_opacity_slider.set(100)
         self.watermark_opacity_slider.grid(row=13, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
@@ -59,7 +63,7 @@ class ControlsFrame(customtkinter.CTkFrame):
             sticky="w",
         )
 
-        self.choose_watermark_btn = customtkinter.CTkButton(self, text="Choose Watermark")
+        self.choose_watermark_btn = customtkinter.CTkButton(self, text="Choose Watermark", state="disabled")
         self.choose_watermark_btn.grid(row=10, column=0, padx=10, pady=10)
         self.watermark_location_entry = customtkinter.CTkEntry(self, placeholder_text="", width=300, state="readonly")
         self.watermark_location_entry.grid(
@@ -72,8 +76,8 @@ class ControlsFrame(customtkinter.CTkFrame):
         )
         self.delete_image_btn = customtkinter.CTkButton(self, text="Delete", state="disabled")
         self.delete_image_btn.grid(row=12, column=0, padx=10, pady=10)
-        self.rotate_image_btn = customtkinter.CTkButton(self, text="Rotate")
+        self.rotate_image_btn = customtkinter.CTkButton(self, text="Rotate", state="disabled")
         self.rotate_image_btn.grid(row=12, column=1, padx=10, pady=10)
 
-        self.save_images_btn = customtkinter.CTkButton(self, text="Save All Images")
+        self.save_images_btn = customtkinter.CTkButton(self, text="Save All Images", state="disabled")
         self.save_images_btn.grid(row=14, column=0, columnspan=2, padx=10, pady=10, sticky="ew")

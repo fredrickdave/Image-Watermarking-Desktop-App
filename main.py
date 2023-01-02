@@ -97,9 +97,7 @@ class App(customtkinter.CTk):
                     self.image_dictionary[path] = {"rotate": 0, "transparency": 0, "imagetk": ImageTk.PhotoImage(i)}
                 else:
                     print("Duplicate, skipped!")
-            self.controls_frame.delete_all_image_btn.configure(state="active")
-            self.controls_frame.delete_image_btn.configure(state="active")
-
+                self.enable_image_options()
         else:
             print("No Image was added")
             return None
@@ -113,35 +111,6 @@ class App(customtkinter.CTk):
         print(self.image_dictionary)
         # self.update_status_bar()
         print("End of Select Image method")
-
-    def delete_all_image(self):
-        self.image_dictionary.clear()
-        self.current_image_path = None
-        self.image_preview_frame.destroy()
-        self.watermark_preview_frame.destroy()
-        self.create_image_preview_frame()
-        self.create_watermark_preview_frame()
-        self.controls_frame.delete_all_image_btn.configure(state="disabled")
-        self.controls_frame.delete_image_btn.configure(state="disabled")
-        print("Removed All Images")
-
-    def rotate_image(self):
-        # Update angle value of current image
-        current_angle = self.image_dictionary[self.current_image_path]["rotate"]
-        if current_angle < 270:
-            self.image_dictionary[self.current_image_path]["rotate"] = current_angle + 90
-        else:
-            self.image_dictionary[self.current_image_path]["rotate"] = 0
-
-        # Update imagetk value to the rotated image
-        current_angle = self.image_dictionary[self.current_image_path]["rotate"]
-        original_image = Image.open(self.current_image_path)
-        original_image.thumbnail(THUMBNAIL_SIZE)
-        rotated_image = original_image.rotate(angle=current_angle, expand=True)
-        self.image_dictionary[self.current_image_path]["imagetk"] = ImageTk.PhotoImage(rotated_image)
-        # print(self.image_dictionary[self.current_image_path])
-        self.update_image_list_preview()
-        self.update_watermark_preview(self.current_image_path)
 
     def delete_image(self):
         # Get key/path of image next to the current image that will be deleted
@@ -166,12 +135,57 @@ class App(customtkinter.CTk):
             self.current_image_path = self.previous_image
         else:
             self.current_image_path = None
-            self.controls_frame.delete_all_image_btn.configure(state="disabled")
-            self.controls_frame.delete_image_btn.configure(state="disabled")
+            self.disable_image_options()
 
         self.update_image_list_preview()
         self.update_watermark_preview(self.current_image_path)
         print(self.current_image_path)
+
+    def delete_all_image(self):
+        self.image_dictionary.clear()
+        self.current_image_path = None
+        self.image_preview_frame.destroy()
+        self.watermark_preview_frame.destroy()
+        self.create_image_preview_frame()
+        self.create_watermark_preview_frame()
+        self.disable_image_options()
+        print("Removed All Images")
+
+    def enable_image_options(self):
+        self.controls_frame.choose_watermark_btn.configure(state="active")
+        self.controls_frame.delete_all_image_btn.configure(state="active")
+        self.controls_frame.delete_image_btn.configure(state="active")
+        self.controls_frame.rotate_image_btn.configure(state="active")
+        self.controls_frame.save_images_btn.configure(state="active")
+        self.controls_frame.watermark_opacity_slider.configure(state="active")
+        self.controls_frame.watermark_size_slider.configure(state="active")
+
+    def disable_image_options(self):
+        self.controls_frame.choose_watermark_btn.configure(state="disabled")
+        self.controls_frame.delete_all_image_btn.configure(state="disabled")
+        self.controls_frame.delete_image_btn.configure(state="disabled")
+        self.controls_frame.rotate_image_btn.configure(state="disabled")
+        self.controls_frame.save_images_btn.configure(state="disabled")
+        self.controls_frame.watermark_opacity_slider.configure(state="disabled")
+        self.controls_frame.watermark_size_slider.configure(state="disabled")
+
+    def rotate_image(self):
+        # Update angle value of current image
+        current_angle = self.image_dictionary[self.current_image_path]["rotate"]
+        if current_angle < 270:
+            self.image_dictionary[self.current_image_path]["rotate"] = current_angle + 90
+        else:
+            self.image_dictionary[self.current_image_path]["rotate"] = 0
+
+        # Update imagetk value to the rotated image
+        current_angle = self.image_dictionary[self.current_image_path]["rotate"]
+        original_image = Image.open(self.current_image_path)
+        original_image.thumbnail(THUMBNAIL_SIZE)
+        rotated_image = original_image.rotate(angle=current_angle, expand=True)
+        self.image_dictionary[self.current_image_path]["imagetk"] = ImageTk.PhotoImage(rotated_image)
+        # print(self.image_dictionary[self.current_image_path])
+        self.update_image_list_preview()
+        self.update_watermark_preview(self.current_image_path)
 
     def update_watermark_preview(self, image_path):
         self.watermark_preview_frame.destroy()
