@@ -41,7 +41,7 @@ class App(customtkinter.CTk):
         self.watermark_opacity = 100
 
         # Set default save location for watermarked images
-        self.save_location = "/output"
+        self.save_location = "output"
 
         self.controls_frame = ControlsFrame()
         self.controls_frame.add_image_btn.configure(command=self.add_image)
@@ -157,8 +157,8 @@ class App(customtkinter.CTk):
         self.controls_frame.delete_image_btn.configure(state="active")
         self.controls_frame.rotate_image_btn.configure(state="active")
         self.controls_frame.save_images_btn.configure(state="active")
-        self.controls_frame.watermark_opacity_slider.configure(state="active")
-        self.controls_frame.watermark_size_slider.configure(state="active")
+        self.controls_frame.watermark_opacity_slider.configure(state="normal")
+        self.controls_frame.watermark_size_slider.configure(state="normal")
 
     def disable_image_options(self):
         self.controls_frame.choose_watermark_btn.configure(state="disabled")
@@ -328,7 +328,7 @@ class App(customtkinter.CTk):
         for image_path in self.image_dictionary.keys():
             print(image_path)
             watermarked_image = self.apply_watermark(image_path)
-            watermarked_image.save(fp=f"output/{Path(image_path).stem}_watermarked{Path(image_path).suffix}")
+            watermarked_image.save(fp=f"{self.save_location}/{Path(image_path).stem}_watermarked{Path(image_path).suffix}")
 
 
 if __name__ == "__main__":
