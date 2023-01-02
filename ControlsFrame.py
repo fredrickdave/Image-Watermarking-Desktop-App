@@ -2,8 +2,8 @@ import customtkinter
 
 
 class ControlsFrame(customtkinter.CTkFrame):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.add_image_btn = customtkinter.CTkButton(self, text="Add Image(s)")
         self.add_image_btn.grid(row=0, column=0, padx=10, pady=10)
@@ -39,14 +39,14 @@ class ControlsFrame(customtkinter.CTkFrame):
             row += 1
 
         self.watermark_size_slider = customtkinter.CTkSlider(
-            self, from_=100, to=700, orient="horizontal", state="disabled"
+            self, from_=100, to=700, orientation="horizontal", state="disabled"
         )
         self.watermark_size_slider.set(300)
         self.watermark_size_slider.grid(row=7, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
 
         # Opacity Slider value is based on percentage
         self.watermark_opacity_slider = customtkinter.CTkSlider(
-            self, from_=10, to=100, orient="horizontal", state="disabled"
+            self, from_=10, to=100, orientation="horizontal", state="disabled"
         )
         self.watermark_opacity_slider.set(100)
         self.watermark_opacity_slider.grid(row=13, column=0, columnspan=2, padx=10, pady=10, sticky="ew")

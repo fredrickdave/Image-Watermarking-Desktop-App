@@ -43,7 +43,7 @@ class App(customtkinter.CTk):
         # Set default save location for watermarked images
         self.save_location = "output"
 
-        self.controls_frame = ControlsFrame()
+        self.controls_frame = ControlsFrame(self)
         self.controls_frame.add_image_btn.configure(command=self.add_image)
         self.controls_frame.delete_all_image_btn.configure(command=self.delete_all_image)
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
@@ -54,7 +54,7 @@ class App(customtkinter.CTk):
         self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
         self.controls_frame.save_images_btn.configure(command=self.save_images)
         self.controls_frame.save_location_entry.configure(state="normal")
-        self.controls_frame.save_location_entry.insert(0, self.save_location)
+        self.controls_frame.save_location_entry.insert(0, "/output")
         self.controls_frame.save_location_entry.configure(state="readonly")
         self.controls_frame.grid(row=0, column=0, rowspan=2, padx=20, pady=20, sticky="nsew")
 
@@ -216,6 +216,7 @@ class App(customtkinter.CTk):
         self.preview_image = customtkinter.CTkLabel(
             self.watermark_preview_frame,
             image=self.imagetk,
+            text=""
         )
         self.preview_image.grid(row=0, column=0, padx=25, pady=10, sticky="news")
 
@@ -328,7 +329,9 @@ class App(customtkinter.CTk):
         for image_path in self.image_dictionary.keys():
             print(image_path)
             watermarked_image = self.apply_watermark(image_path)
-            watermarked_image.save(fp=f"{self.save_location}/{Path(image_path).stem}_watermarked{Path(image_path).suffix}")
+            watermarked_image.save(
+                fp=f"{self.save_location}/{Path(image_path).stem}_watermarked{Path(image_path).suffix}"
+            )
 
 
 if __name__ == "__main__":
