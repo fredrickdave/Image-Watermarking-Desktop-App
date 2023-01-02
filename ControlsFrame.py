@@ -74,3 +74,6 @@ class ControlsFrame(customtkinter.CTkFrame):
         self.delete_image_btn.grid(row=12, column=0, padx=10, pady=10)
         self.rotate_image_btn = customtkinter.CTkButton(self, text="Rotate")
         self.rotate_image_btn.grid(row=12, column=1, padx=10, pady=10)
+
+        self.save_images_btn = customtkinter.CTkButton(self, text="Save All Images")
+        self.save_images_btn.grid(row=14, column=0, columnspan=2, padx=10, pady=10, sticky="ew")

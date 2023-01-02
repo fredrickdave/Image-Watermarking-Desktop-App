@@ -1,3 +1,4 @@
+from pathlib import Path
 from tkinter import Button
 from tkinter.filedialog import askdirectory, askopenfilename, askopenfilenames
 
@@ -51,6 +52,7 @@ class App(customtkinter.CTk):
         self.controls_frame.choose_watermark_btn.configure(command=self.choose_watermark)
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
         self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
+        self.controls_frame.save_images_btn.configure(command=self.save_images)
         self.controls_frame.save_location_entry.configure(state="normal")
         self.controls_frame.save_location_entry.insert(0, self.save_location)
         self.controls_frame.save_location_entry.configure(state="readonly")
@@ -183,7 +185,8 @@ class App(customtkinter.CTk):
         # Update current_image_path to store the selected image_path to show on watermark preview frame
         self.current_image_path = image_path
 
-        # If a watermark image is selected, apply it as watermark. Otherwise, open the image without applying watermark
+        # If a watermark image is not available, open the image without applying watermark
+        # Otherwise, apply the watermark
         if not self.current_watermark_path:
             self.result = Image.open(self.current_image_path)
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
@@ -192,7 +195,7 @@ class App(customtkinter.CTk):
                 self.result = self.result.rotate(angle=current_angle, expand=True)
             print("No chosen watermark yet")
         else:
-            self.result = self.apply_watermark()
+            self.result = self.apply_watermark(self.current_image_path)
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
 
         self.imagetk = ImageTk.PhotoImage(self.result)
@@ -229,9 +232,9 @@ class App(customtkinter.CTk):
             self.controls_frame.watermark_location_entry.configure(state="readonly")
             self.update_watermark_preview(self.current_image_path)
 
-    def apply_watermark(self):
-        self.original_image = Image.open(self.current_image_path)
-        current_angle = self.image_dictionary[self.current_image_path]["rotate"]
+    def apply_watermark(self, image_path):
+        self.original_image = Image.open(image_path)
+        current_angle = self.image_dictionary[image_path]["rotate"]
         if current_angle > 0:
             self.original_image = self.original_image.rotate(angle=current_angle, expand=True)
 
@@ -253,7 +256,7 @@ class App(customtkinter.CTk):
         print(f"Original image Width: {self.original_image_width}, Height: {self.original_image_height}")
         print("Watermark Position", self.adjust_watermark_position())
         self.watermarked_image = Image.new(
-            mode="RGBA", size=(self.original_image_width, self.original_image_height), color=(0, 0, 0, 0)
+            mode="RGB", size=(self.original_image_width, self.original_image_height), color=(0, 0, 0)
         )
         self.watermarked_image.paste(self.original_image, (0, 0))
         self.watermarked_image.paste(self.watermark, self.adjust_watermark_position(), mask=paste_mask)
@@ -304,6 +307,14 @@ class App(customtkinter.CTk):
             self.controls_frame.save_location_entry.configure(state="readonly")
         else:
             print("Clicked cancel")
+
+    def save_images(self):
+        print(Path(self.current_image_path).stem)
+        Path("output").mkdir(exist_ok=True)
+        for image_path in self.image_dictionary.keys():
+            print(image_path)
+            watermarked_image = self.apply_watermark(image_path)
+            watermarked_image.save(fp=f"output/{Path(image_path).stem}_watermarked{Path(image_path).suffix}")
 
 
 if __name__ == "__main__":
