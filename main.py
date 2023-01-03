@@ -49,7 +49,7 @@ class App(customtkinter.CTk):
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
         self.controls_frame.watermark_opacity_slider.configure(command=self.adjust_watermark_opacity)
         self.controls_frame.save_location.configure(command=self.choose_save_location)
-        self.controls_frame.choose_watermark_btn.configure(command=self.choose_watermark)
+        self.controls_frame.choose_image_watermark_btn.configure(command=self.choose_watermark)
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
         self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
         self.controls_frame.save_images_btn.configure(command=self.save_images)
@@ -152,7 +152,8 @@ class App(customtkinter.CTk):
         print("Removed All Images")
 
     def enable_image_options(self):
-        self.controls_frame.choose_watermark_btn.configure(state="active")
+        self.controls_frame.choose_image_watermark_btn.configure(state="active")
+        self.controls_frame.text_watermark_entry.configure(state="normal")
         self.controls_frame.delete_all_image_btn.configure(state="active")
         self.controls_frame.delete_image_btn.configure(state="active")
         self.controls_frame.rotate_image_btn.configure(state="active")
@@ -161,7 +162,9 @@ class App(customtkinter.CTk):
         self.controls_frame.watermark_size_slider.configure(state="normal")
 
     def disable_image_options(self):
-        self.controls_frame.choose_watermark_btn.configure(state="disabled")
+        self.controls_frame.choose_image_watermark_btn.configure(state="disabled")
+        self.controls_frame.text_watermark_entry.delete(0, "end")
+        self.controls_frame.text_watermark_entry.configure(state="disabled")
         self.controls_frame.delete_all_image_btn.configure(state="disabled")
         self.controls_frame.delete_image_btn.configure(state="disabled")
         self.controls_frame.rotate_image_btn.configure(state="disabled")
@@ -213,11 +216,7 @@ class App(customtkinter.CTk):
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
 
         self.imagetk = ImageTk.PhotoImage(self.result)
-        self.preview_image = customtkinter.CTkLabel(
-            self.watermark_preview_frame,
-            image=self.imagetk,
-            text=""
-        )
+        self.preview_image = customtkinter.CTkLabel(self.watermark_preview_frame, image=self.imagetk, text="")
         self.preview_image.grid(row=0, column=0, padx=25, pady=10, sticky="news")
 
     def update_image_list_preview(self):

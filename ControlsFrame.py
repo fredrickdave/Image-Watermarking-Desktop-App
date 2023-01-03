@@ -5,11 +5,6 @@ class ControlsFrame(customtkinter.CTkFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.add_image_btn = customtkinter.CTkButton(self, text="Add Image(s)")
-        self.add_image_btn.grid(row=0, column=0, padx=10, pady=10)
-        self.delete_all_image_btn = customtkinter.CTkButton(self, text="Delete All", state="disabled")
-        self.delete_all_image_btn.grid(row=0, column=1, padx=10, pady=10)
-
         # Radiobuttons - Watermark Position
         self.position_label = customtkinter.CTkLabel(self, text="Watermark Position:")
         self.position_label.grid(row=1, column=0)
@@ -53,7 +48,7 @@ class ControlsFrame(customtkinter.CTkFrame):
 
         self.save_location = customtkinter.CTkButton(self, text="Save Location")
         self.save_location.grid(row=8, column=0, padx=10, pady=10)
-        self.save_location_entry = customtkinter.CTkEntry(self, placeholder_text="/output", width=300, state="readonly")
+        self.save_location_entry = customtkinter.CTkEntry(self, placeholder_text="/output", width=325, state="readonly")
         self.save_location_entry.grid(
             row=9,
             column=0,
@@ -63,21 +58,42 @@ class ControlsFrame(customtkinter.CTkFrame):
             sticky="w",
         )
 
-        self.choose_watermark_btn = customtkinter.CTkButton(self, text="Choose Watermark", state="disabled")
-        self.choose_watermark_btn.grid(row=10, column=0, padx=10, pady=10)
-        self.watermark_location_entry = customtkinter.CTkEntry(self, placeholder_text="", width=300, state="readonly")
+        self.rotate_image_btn = customtkinter.CTkButton(self, text="Rotate", state="disabled")
+        self.rotate_image_btn.grid(row=12, column=0, padx=10, pady=10)
+        self.delete_image_btn = customtkinter.CTkButton(self, text="Delete", state="disabled")
+        self.delete_image_btn.grid(row=12, column=1, padx=10, pady=10)
+
+        # Setup Tab view that contains text and image watermark widgets
+        self.tab_view = customtkinter.CTkTabview(self, height=130)
+        self.tab_view.grid(row=0, column=0, columnspan=2, padx=5, pady=(0, 10))
+        self.image_watermark_tab = self.tab_view.add("Image Watermark")
+        self.text_watermark_tab = self.tab_view.add("Text Watermark")
+
+        self.choose_image_watermark_btn = customtkinter.CTkButton(
+            self.image_watermark_tab, text="Choose Image", state="disabled"
+        )
+        self.choose_image_watermark_btn.grid(row=0, column=0, padx=5, pady=10, sticky="w")
+        self.watermark_location_entry = customtkinter.CTkEntry(self.image_watermark_tab, width=300, state="readonly")
         self.watermark_location_entry.grid(
-            row=11,
+            row=1,
             column=0,
-            columnspan=2,
-            padx=10,
-            pady=(0, 10),
+            padx=5,
+            pady=(0, 5),
             sticky="w",
         )
-        self.delete_image_btn = customtkinter.CTkButton(self, text="Delete", state="disabled")
-        self.delete_image_btn.grid(row=12, column=0, padx=10, pady=10)
-        self.rotate_image_btn = customtkinter.CTkButton(self, text="Rotate", state="disabled")
-        self.rotate_image_btn.grid(row=12, column=1, padx=10, pady=10)
 
+        self.text_watermark_entry = customtkinter.CTkEntry(self.text_watermark_tab, width=300, state="readonly")
+        self.text_watermark_entry.grid(
+            row=1,
+            column=0,
+            padx=5,
+            pady=(0, 5),
+            sticky="w",
+        )
+
+        self.add_image_btn = customtkinter.CTkButton(self, text="Add Image(s)")
+        self.add_image_btn.grid(row=15, column=1, padx=10, pady=10)
+        self.delete_all_image_btn = customtkinter.CTkButton(self, text="Delete All", state="disabled")
+        self.delete_all_image_btn.grid(row=15, column=0, padx=10, pady=10)
         self.save_images_btn = customtkinter.CTkButton(self, text="Save All Images", state="disabled")
-        self.save_images_btn.grid(row=14, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
+        self.save_images_btn.grid(row=16, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
