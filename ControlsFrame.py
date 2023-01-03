@@ -68,7 +68,7 @@ class ControlsFrame(customtkinter.CTkFrame):
         self.delete_image_btn.grid(row=12, column=1, padx=10, pady=10)
 
         # Setup Tab view that contains text and image watermark widgets
-        self.tab_view = customtkinter.CTkTabview(self, height=130)
+        self.tab_view = customtkinter.CTkTabview(self, height=200)
         self.tab_view.grid(row=0, column=0, columnspan=2, padx=5, pady=(0, 10))
         self.image_watermark_tab = self.tab_view.add("Image Watermark")
         self.text_watermark_tab = self.tab_view.add("Text Watermark")

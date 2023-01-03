@@ -3,7 +3,7 @@ from tkinter import Button
 from tkinter.filedialog import askdirectory, askopenfilename, askopenfilenames
 
 import customtkinter
-from PIL import Image, ImageTk
+from PIL import Image, ImageDraw, ImageFont, ImageTk
 
 from ControlsFrame import ControlsFrame
 from DoubleScrolledFrame import DoubleScrolledFrame
@@ -30,8 +30,9 @@ class App(customtkinter.CTk):
         # Stores path of image currently shown in the watermark preview frame
         self.current_image_path = None
 
-        # Stores path of image chosen as watermark
-        self.current_watermark_path = None
+        # Store path of image or text chosen as watermark
+        self.current_image_watermark_path = None
+        self.current_text_watermark = "Hello"
 
         # Set default watermark size and margin
         self.watermark_size = (300, 300)
@@ -49,7 +50,7 @@ class App(customtkinter.CTk):
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
         self.controls_frame.watermark_opacity_slider.configure(command=self.adjust_watermark_opacity)
         self.controls_frame.save_location.configure(command=self.choose_save_location)
-        self.controls_frame.choose_image_watermark_btn.configure(command=self.choose_watermark)
+        self.controls_frame.choose_image_watermark_btn.configure(command=self.choose_image_watermark)
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
         self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
         self.controls_frame.save_images_btn.configure(command=self.save_images)
@@ -204,7 +205,7 @@ class App(customtkinter.CTk):
 
         # If a watermark image is not available, open the image without applying watermark
         # Otherwise, apply the watermark
-        if not self.current_watermark_path:
+        if not self.current_image_watermark_path and not self.current_text_watermark:
             self.result = Image.open(self.current_image_path)
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
             current_angle = self.image_dictionary[self.current_image_path]["rotate"]
@@ -237,12 +238,12 @@ class App(customtkinter.CTk):
                 command=lambda path=path: self.update_watermark_preview(path),
             ).grid(row=0, column=index, padx=10, pady=5)
 
-    def choose_watermark(self):
-        self.current_watermark_path = askopenfilename(title="Choose the watermark image you want to use")
-        if self.current_watermark_path:
+    def choose_image_watermark(self):
+        self.current_image_watermark_path = askopenfilename(title="Choose the watermark image you want to use")
+        if self.current_image_watermark_path:
             self.controls_frame.watermark_location_entry.configure(state="normal")
             self.controls_frame.watermark_location_entry.delete(0, "end")
-            self.controls_frame.watermark_location_entry.insert(0, self.current_watermark_path)
+            self.controls_frame.watermark_location_entry.insert(0, self.current_image_watermark_path)
             self.controls_frame.watermark_location_entry.configure(state="readonly")
             self.update_watermark_preview(self.current_image_path)
 
@@ -253,27 +254,51 @@ class App(customtkinter.CTk):
             self.original_image = self.original_image.rotate(angle=current_angle, expand=True)
 
         self.original_image_width, self.original_image_height = self.original_image.size
-        self.watermark = Image.open(self.current_watermark_path)
-        # self.watermark.putalpha(self.watermark_opacity)
-
-        # Adjust watermark size to be pasted based on the watermark_size value chosen by user. Default is 300px
-        self.watermark.thumbnail(self.watermark_size)
-
-        # Adjust watermark opacity on a percent scale
-        if self.watermark.mode != "RGBA":
-            alpha = Image.new("L", self.watermark.size, 255)
-            self.watermark.putalpha(alpha)
-        paste_mask = self.watermark.split()[3].point(lambda i: i * self.watermark_opacity / 100.0)
-
-        print("Watermark Mode", self.watermark.mode)
-
-        print(f"Original image Width: {self.original_image_width}, Height: {self.original_image_height}")
-        print("Watermark Position", self.adjust_watermark_position())
         self.watermarked_image = Image.new(
-            mode="RGB", size=(self.original_image_width, self.original_image_height), color=(0, 0, 0)
+            mode="RGBA", size=(self.original_image_width, self.original_image_height), color=(0, 0, 0, 0)
         )
         self.watermarked_image.paste(self.original_image, (0, 0))
-        self.watermarked_image.paste(self.watermark, self.adjust_watermark_position(), mask=paste_mask)
+
+        current_tab = self.controls_frame.tab_view.get()
+        if current_tab == "Image Watermark" and self.current_image_watermark_path:
+            self.watermark = Image.open(self.current_image_watermark_path)
+
+            # Adjust watermark size to be pasted based on the watermark_size value chosen by user. Default is 300px
+            self.watermark.thumbnail(self.watermark_size)
+
+            # Adjust watermark opacity on a percent scale
+            if self.watermark.mode != "RGBA":
+                alpha = Image.new("L", self.watermark.size, 255)
+                self.watermark.putalpha(alpha)
+            paste_mask = self.watermark.split()[3].point(lambda i: i * self.watermark_opacity / 100.0)
+
+            print("Watermark Mode", self.watermark.mode)
+
+            print(f"Original image Width: {self.original_image_width}, Height: {self.original_image_height}")
+            print("Watermark Position", self.get_watermark_position(self.watermark.size))
+            self.watermarked_image.paste(
+                self.watermark, self.get_watermark_position(self.watermark.size), mask=paste_mask
+            )
+
+        elif current_tab == "Text Watermark" and self.current_text_watermark:
+            txt = Image.new("RGBA", (self.original_image_width, self.original_image_height), (255, 255, 255, 0))
+            font = ImageFont.truetype("arial.ttf", 80)
+            d = ImageDraw.Draw(txt)
+
+            # Calculate the size of text watermark input
+            bbox = d.textbbox((20, 20), "Hello", font=font)
+            self.text_watermark_size = (bbox[2] - bbox[0], bbox[3] - bbox[1])
+
+            d.text(self.get_watermark_position(self.text_watermark_size), "Hello", font=font, fill=(255, 255, 255, 128))
+
+            # Combine the watermarked image with the transparent blank image containing the text
+            self.watermarked_image = Image.alpha_composite(self.watermarked_image, txt)
+
+            print("Text Watermark!")
+            print("Bbox", bbox)
+            print("Bbox tuple", self.text_watermark_size)
+            # print("Watermark Position:", self.get_watermark_position())
+
         return self.watermarked_image
 
     def adjust_watermark_size(self, size):
@@ -289,26 +314,29 @@ class App(customtkinter.CTk):
         print("Watermark Opacity", self.watermark_opacity)
         self.update_watermark_preview(self.current_image_path)
 
-    def adjust_watermark_position(self):
+    def get_watermark_position(self, watermark_size):
         """Returns a 2-tuple, containing (x, y) positions in pixels based on the value of watermark_pos variable."""
-        print("Watermark Size", self.watermark.size)
+        watermark_width = watermark_size[0]
+        watermark_height = watermark_size[1]
+        # print(f"Watermark Size: ({watermark_width, watermark_height})")
+
         if self.controls_frame.watermark_position.get() == "bottom-left":
-            return (self.watermark_margin, self.original_image_height - self.watermark.size[1] - self.watermark_margin)
+            return (self.watermark_margin, self.original_image_height - watermark_height - self.watermark_margin)
         elif self.controls_frame.watermark_position.get() == "top-left":
             return (self.watermark_margin, self.watermark_margin)
         # FIXME - bottom-right alignment of watermark is messed up - FIXED: Issue - I just used watermark_size
         # instead of watermark.size attribute
         elif self.controls_frame.watermark_position.get() == "bottom-right":
             return (
-                self.original_image_width - self.watermark.size[0] - self.watermark_margin,
-                self.original_image_height - self.watermark.size[1] - self.watermark_margin,
+                self.original_image_width - watermark_width - self.watermark_margin,
+                self.original_image_height - watermark_height - self.watermark_margin,
             )
         elif self.controls_frame.watermark_position.get() == "top-right":
-            return (self.original_image_width - self.watermark.size[0] - self.watermark_margin, self.watermark_margin)
+            return (self.original_image_width - watermark_width - self.watermark_margin, self.watermark_margin)
         elif self.controls_frame.watermark_position.get() == "center":
             return (
-                round(self.original_image_width * 0.50 - (self.watermark.size[0] * 0.50)),
-                round(self.original_image_height * 0.50 - (self.watermark.size[1] * 0.50)),
+                round(self.original_image_width * 0.50 - (watermark_width * 0.50)),
+                round(self.original_image_height * 0.50 - (watermark_height * 0.50)),
             )
 
     def choose_save_location(self):
@@ -323,14 +351,15 @@ class App(customtkinter.CTk):
             print("Clicked cancel")
 
     def save_images(self):
-        print(Path(self.current_image_path).stem)
+        print("Save", Path(self.current_image_path).stem)
         Path("output").mkdir(exist_ok=True)
         for image_path in self.image_dictionary.keys():
             print(image_path)
             watermarked_image = self.apply_watermark(image_path)
-            watermarked_image.save(
-                fp=f"{self.save_location}/{Path(image_path).stem}_watermarked{Path(image_path).suffix}"
-            )
+            # watermarked_image.save(
+            #     fp=f"{self.save_location}/{Path(image_path).stem}_watermarked{Path(image_path).suffix}"
+            # )
+            watermarked_image.show()
 
 
 if __name__ == "__main__":
