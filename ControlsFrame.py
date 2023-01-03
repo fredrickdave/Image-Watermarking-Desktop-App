@@ -18,7 +18,6 @@ class ControlsFrame(customtkinter.CTkFrame):
 
         self.watermark_position = customtkinter.StringVar()
         self.watermark_position.set("bottom-left")
-        row = 2
         self.radiobuttons = []
         for text, pos in self.modes:
             self.watermark_pos_radiobutton = customtkinter.CTkRadioButton(
@@ -29,9 +28,14 @@ class ControlsFrame(customtkinter.CTkFrame):
             )
             self.radiobuttons.append(self.watermark_pos_radiobutton)
 
+        row = 2
+        column = 0
         for item in self.radiobuttons:
-            item.grid(row=row, column=0, padx=20, pady=5, stick="w")
-            row += 1
+            if column > 1:
+                column = 0
+                row += 1
+            item.grid(row=row, column=column, padx=20, pady=5, stick="w")
+            column += 1
 
         self.watermark_size_slider = customtkinter.CTkSlider(
             self, from_=100, to=700, orientation="horizontal", state="disabled"
