@@ -215,7 +215,7 @@ class App(customtkinter.CTk):
             self.result = self.apply_watermark(self.current_image_path)
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
 
-        self.imagetk = ImageTk.PhotoImage(self.result)
+        self.imagetk = customtkinter.CTkImage(light_image=self.result, size=self.result.size)
         self.preview_image = customtkinter.CTkLabel(self.watermark_preview_frame, image=self.imagetk, text="")
         self.preview_image.grid(row=0, column=0, padx=25, pady=10, sticky="news")
 
