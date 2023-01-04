@@ -88,12 +88,14 @@ class ControlsFrame(customtkinter.CTkFrame):
 
         self.text_watermark_entry = customtkinter.CTkEntry(self.text_watermark_tab, width=300, state="readonly")
         self.text_watermark_entry.grid(
-            row=1,
+            row=0,
             column=0,
             padx=5,
             pady=(0, 5),
             sticky="w",
         )
+        self.apply_text_watermark_btn = customtkinter.CTkButton(self.text_watermark_tab, text="Apply", state="disabled")
+        self.apply_text_watermark_btn.grid(row=1, column=0, padx=5, pady=5)
 
         self.add_image_btn = customtkinter.CTkButton(self, text="Add Image(s)")
         self.add_image_btn.grid(row=15, column=1, padx=10, pady=10)

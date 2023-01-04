@@ -32,10 +32,11 @@ class App(customtkinter.CTk):
 
         # Store path of image or text chosen as watermark
         self.current_image_watermark_path = None
-        self.current_text_watermark = "Hello"
+        self.current_text_watermark = None
 
         # Set default watermark size and margin
-        self.watermark_size = (300, 300)
+        self.image_watermark_size = (300, 300)
+        self.text_watermark_size = 100
         self.watermark_margin = 40
 
         # Set default watermark opacity
@@ -54,6 +55,7 @@ class App(customtkinter.CTk):
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
         self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
         self.controls_frame.save_images_btn.configure(command=self.save_images)
+        self.controls_frame.apply_text_watermark_btn.configure(command=self.get_text_watermark)
         self.controls_frame.save_location_entry.configure(state="normal")
         self.controls_frame.save_location_entry.insert(0, "/output")
         self.controls_frame.save_location_entry.configure(state="readonly")
@@ -98,7 +100,7 @@ class App(customtkinter.CTk):
                     self.image_dictionary[path] = {"rotate": 0, "transparency": 0, "imagetk": ImageTk.PhotoImage(i)}
                 else:
                     print("Duplicate, skipped!")
-                self.enable_image_options()
+                self.enable_widgets()
         else:
             print("No Image was added")
             return None
@@ -136,7 +138,7 @@ class App(customtkinter.CTk):
             self.current_image_path = self.previous_image
         else:
             self.current_image_path = None
-            self.disable_image_options()
+            self.disable_widgets()
 
         self.update_image_list_preview()
         self.update_watermark_preview(self.current_image_path)
@@ -149,12 +151,13 @@ class App(customtkinter.CTk):
         self.watermark_preview_frame.destroy()
         self.create_image_preview_frame()
         self.create_watermark_preview_frame()
-        self.disable_image_options()
+        self.disable_widgets()
         print("Removed All Images")
 
-    def enable_image_options(self):
+    def enable_widgets(self):
         self.controls_frame.choose_image_watermark_btn.configure(state="active")
         self.controls_frame.text_watermark_entry.configure(state="normal")
+        self.controls_frame.apply_text_watermark_btn.configure(state="active")
         self.controls_frame.delete_all_image_btn.configure(state="active")
         self.controls_frame.delete_image_btn.configure(state="active")
         self.controls_frame.rotate_image_btn.configure(state="active")
@@ -162,10 +165,11 @@ class App(customtkinter.CTk):
         self.controls_frame.watermark_opacity_slider.configure(state="normal")
         self.controls_frame.watermark_size_slider.configure(state="normal")
 
-    def disable_image_options(self):
+    def disable_widgets(self):
         self.controls_frame.choose_image_watermark_btn.configure(state="disabled")
         self.controls_frame.text_watermark_entry.delete(0, "end")
         self.controls_frame.text_watermark_entry.configure(state="disabled")
+        self.controls_frame.apply_text_watermark_btn.configure(state="disabled")
         self.controls_frame.delete_all_image_btn.configure(state="disabled")
         self.controls_frame.delete_image_btn.configure(state="disabled")
         self.controls_frame.rotate_image_btn.configure(state="disabled")
@@ -264,7 +268,7 @@ class App(customtkinter.CTk):
             self.watermark = Image.open(self.current_image_watermark_path)
 
             # Adjust watermark size to be pasted based on the watermark_size value chosen by user. Default is 300px
-            self.watermark.thumbnail(self.watermark_size)
+            self.watermark.thumbnail(self.image_watermark_size)
 
             # Adjust watermark opacity on a percent scale
             if self.watermark.mode != "RGBA":
@@ -281,31 +285,47 @@ class App(customtkinter.CTk):
             )
 
         elif current_tab == "Text Watermark" and self.current_text_watermark:
+            # Make a blank image for the text, initialized to transparent text color
             txt = Image.new("RGBA", (self.original_image_width, self.original_image_height), (255, 255, 255, 0))
-            font = ImageFont.truetype("arial.ttf", 80)
+            # Set a font
+            font = ImageFont.truetype("arial.ttf", self.text_watermark_size)
+            # Get a drawing context
             d = ImageDraw.Draw(txt)
 
             # Calculate the size of text watermark input
-            bbox = d.textbbox((20, 20), "Hello", font=font)
-            self.text_watermark_size = (bbox[2] - bbox[0], bbox[3] - bbox[1])
+            bbox = d.textbbox((40, 40), self.current_text_watermark, font=font)
+            text_size = (bbox[2] - bbox[0], bbox[3] - bbox[1])
+            # height = d.textsize(self.current_text_watermark, font=font, direction="ttb")
+            text_size = d.textsize(text=self.current_text_watermark, font=font)
+            print("Original Image Size:, ", self.original_image.size)
+            print("Bbox: ", bbox)
+            print("Text Size", text_size)
+            print("Text Watermark Position: ", self.get_watermark_position(text_size))
 
-            d.text(self.get_watermark_position(self.text_watermark_size), "Hello", font=font, fill=(255, 255, 255, 128))
+            # Draw text
+            d.text(
+                xy=self.get_watermark_position(text_size),
+                text=self.current_text_watermark,
+                font=font,
+                fill=(255, 255, 255, 125),
+            )
 
             # Combine the watermarked image with the transparent blank image containing the text
             self.watermarked_image = Image.alpha_composite(self.watermarked_image, txt)
 
-            print("Text Watermark!")
-            print("Bbox", bbox)
-            print("Bbox tuple", self.text_watermark_size)
-            # print("Watermark Position:", self.get_watermark_position())
-
         return self.watermarked_image
+
+    def get_text_watermark(self):
+        self.current_text_watermark = self.controls_frame.text_watermark_entry.get()
+        print("self.current_text_watermark", self.current_text_watermark)
+        self.update_watermark_preview(self.current_image_path)
 
     def adjust_watermark_size(self, size):
         # tkinter slider command argument automatically pass in the slider value, so size parameter accepts it
-        self.watermark_size = (int(size), int(size))
-
-        print("Watermark Size", self.watermark_size)
+        self.image_watermark_size = (int(size), int(size))
+        self.text_watermark_size = int(size * 0.50)
+        # print("Watermark Image Size", self.image_watermark_size)
+        # print("Watermark Text Size", self.text_watermark_size)
         self.update_watermark_preview(self.current_image_path)
 
     def adjust_watermark_opacity(self, opacity):
@@ -315,7 +335,12 @@ class App(customtkinter.CTk):
         self.update_watermark_preview(self.current_image_path)
 
     def get_watermark_position(self, watermark_size):
-        """Returns a 2-tuple, containing (x, y) positions in pixels based on the value of watermark_pos variable."""
+        """Calculates x and y positions where watermark will be placed based on the image or text watermark size.
+
+        Returns:
+            tuple: A tuple containing (x, y) positions in pixels based on the image or text watermark size.
+        """
+
         watermark_width = watermark_size[0]
         watermark_height = watermark_size[1]
         # print(f"Watermark Size: ({watermark_width, watermark_height})")
