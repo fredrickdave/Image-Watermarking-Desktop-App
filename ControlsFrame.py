@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import customtkinter
 
 
@@ -86,7 +88,7 @@ class ControlsFrame(customtkinter.CTkFrame):
             sticky="w",
         )
 
-        self.text_watermark_entry = customtkinter.CTkEntry(self.text_watermark_tab, width=300, state="readonly")
+        self.text_watermark_entry = customtkinter.CTkEntry(self.text_watermark_tab, width=250, state="readonly")
         self.text_watermark_entry.grid(
             row=0,
             column=0,
@@ -94,8 +96,19 @@ class ControlsFrame(customtkinter.CTkFrame):
             pady=(0, 5),
             sticky="w",
         )
-        self.apply_text_watermark_btn = customtkinter.CTkButton(self.text_watermark_tab, text="Apply", state="disabled")
-        self.apply_text_watermark_btn.grid(row=1, column=0, padx=5, pady=5)
+        self.apply_text_watermark_btn = customtkinter.CTkButton(
+            self.text_watermark_tab, text="Apply", state="disabled", width=50
+        )
+        self.apply_text_watermark_btn.grid(row=0, column=1, pady=(0, 5))
+        self.text_color_chooser_btn = customtkinter.CTkButton(self.text_watermark_tab, text="Color", state="disabled")
+        self.text_color_chooser_btn.grid(row=1, column=0, padx=5, pady=5)
+        self.selected_font = customtkinter.StringVar()
+        self.fonts = []
+        for font in list(Path("fonts").iterdir()):
+            self.fonts.append(font.stem)
+        self.font_option_menu = customtkinter.CTkOptionMenu(self.text_watermark_tab, values=self.fonts)
+        self.font_option_menu.grid(row=2, column=0, padx=5, pady=5)
+        self.font_option_menu.set("Roboto-Regular")
 
         self.add_image_btn = customtkinter.CTkButton(self, text="Add Image(s)")
         self.add_image_btn.grid(row=15, column=1, padx=10, pady=10)

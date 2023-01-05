@@ -1,5 +1,5 @@
 from pathlib import Path
-from tkinter import Button
+from tkinter import Button, colorchooser
 from tkinter.filedialog import askdirectory, askopenfilename, askopenfilenames
 
 import customtkinter
@@ -38,6 +38,8 @@ class App(customtkinter.CTk):
         self.image_watermark_size = (300, 300)
         self.text_watermark_size = 100
         self.watermark_margin = 40
+        self.watermark_text_color = (255, 255, 255)  # Default White
+        self.font = "fonts/Roboto-Regular.ttf"
 
         # Set default watermark opacity
         self.watermark_opacity = 100
@@ -56,6 +58,8 @@ class App(customtkinter.CTk):
         self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
         self.controls_frame.save_images_btn.configure(command=self.save_images)
         self.controls_frame.apply_text_watermark_btn.configure(command=self.get_text_watermark)
+        self.controls_frame.text_color_chooser_btn.configure(command=self.get_text_watermark_color)
+        self.controls_frame.font_option_menu.configure(command=self.get_font)
         self.controls_frame.save_location_entry.configure(state="normal")
         self.controls_frame.save_location_entry.insert(0, "/output")
         self.controls_frame.save_location_entry.configure(state="readonly")
@@ -156,8 +160,9 @@ class App(customtkinter.CTk):
 
     def enable_widgets(self):
         self.controls_frame.choose_image_watermark_btn.configure(state="active")
-        self.controls_frame.text_watermark_entry.configure(state="normal")
+        self.controls_frame.text_watermark_entry.configure(state="normal", placeholder_text="Enter your text here")
         self.controls_frame.apply_text_watermark_btn.configure(state="active")
+        self.controls_frame.text_color_chooser_btn.configure(state="active")
         self.controls_frame.delete_all_image_btn.configure(state="active")
         self.controls_frame.delete_image_btn.configure(state="active")
         self.controls_frame.rotate_image_btn.configure(state="active")
@@ -169,6 +174,7 @@ class App(customtkinter.CTk):
         self.controls_frame.choose_image_watermark_btn.configure(state="disabled")
         self.controls_frame.text_watermark_entry.delete(0, "end")
         self.controls_frame.text_watermark_entry.configure(state="disabled")
+        self.controls_frame.text_color_chooser_btn.configure(state="disabled")
         self.controls_frame.apply_text_watermark_btn.configure(state="disabled")
         self.controls_frame.delete_all_image_btn.configure(state="disabled")
         self.controls_frame.delete_image_btn.configure(state="disabled")
@@ -288,7 +294,7 @@ class App(customtkinter.CTk):
             # Make a blank image for the text, initialized to transparent text color
             txt = Image.new("RGBA", (self.original_image_width, self.original_image_height), (255, 255, 255, 0))
             # Set a font
-            font = ImageFont.truetype("arial.ttf", self.text_watermark_size)
+            font = ImageFont.truetype(self.font, self.text_watermark_size)
             # Get a drawing context
             d = ImageDraw.Draw(txt)
 
@@ -303,11 +309,12 @@ class App(customtkinter.CTk):
             print("Text Watermark Position: ", self.get_watermark_position(text_size))
 
             # Draw text
+            R, G, B = self.watermark_text_color
             d.text(
                 xy=self.get_watermark_position(text_size),
                 text=self.current_text_watermark,
                 font=font,
-                fill=(255, 255, 255, 125),
+                fill=(R, G, B, 125),
             )
 
             # Combine the watermarked image with the transparent blank image containing the text
@@ -319,6 +326,18 @@ class App(customtkinter.CTk):
         self.current_text_watermark = self.controls_frame.text_watermark_entry.get()
         print("self.current_text_watermark", self.current_text_watermark)
         self.update_watermark_preview(self.current_image_path)
+
+    def get_font(self, font):
+        self.font = f"fonts/{font}.ttf"
+        print("Font", self.font)
+        self.update_watermark_preview(self.current_image_path)
+
+    def get_text_watermark_color(self):
+        color = colorchooser.askcolor(title="Choose Text Watermark Color")[0]
+        print(self.watermark_text_color)
+        if color:
+            self.watermark_text_color = color
+            self.update_watermark_preview(self.current_image_path)
 
     def adjust_watermark_size(self, size):
         # tkinter slider command argument automatically pass in the slider value, so size parameter accepts it
