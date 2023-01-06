@@ -401,8 +401,15 @@ class App(customtkinter.CTk):
             print("Clicked cancel")
 
     def save_images(self):
-        print("Save", Path(self.current_image_path).stem)
-        Path("output").mkdir(exist_ok=True)
+        """This method will save all images that were added to the image_dictionary with the applied watermark.
+
+        Images will be saved to the folder location chosen by user. If save location was not chosen, default save
+        location "output" will be used.
+        """
+        # If default save location was not updated, create output folder inside base folder if it doesn't exists.
+        if self.save_location == "output":
+            Path("output").mkdir(exist_ok=True)
+
         for image_path in self.image_dictionary.keys():
             print(image_path)
             # Convert mode of the returned image from apply_watermark method to "RGB" to allow saving image in original
@@ -411,7 +418,6 @@ class App(customtkinter.CTk):
             watermarked_image.save(
                 fp=f"{self.save_location}/{Path(image_path).stem}_watermarked{Path(image_path).suffix}"
             )
-            watermarked_image.show()
 
 
 if __name__ == "__main__":
