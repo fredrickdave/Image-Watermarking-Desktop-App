@@ -308,13 +308,18 @@ class App(customtkinter.CTk):
             print("Text Size", text_size)
             print("Text Watermark Position: ", self.get_watermark_position(text_size))
 
-            # Draw text
+            # This section will draw the text.
+            # Get the RGB values from self.watermark_text_color and apply it to fill
             R, G, B = self.watermark_text_color
+            # This will compute the correct alpha value based on the current percentage value of opacity slider.
+            A = int(255 * (self.watermark_opacity * 0.01))
+            print("Opacity Slider:", self.watermark_opacity)
+            print("Opacity A: ", A)
             d.text(
                 xy=self.get_watermark_position(text_size),
                 text=self.current_text_watermark,
                 font=font,
-                fill=(R, G, B, 125),
+                fill=(R, G, B, A),
             )
 
             # Combine the watermarked image with the transparent blank image containing the text
