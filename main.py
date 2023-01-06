@@ -399,10 +399,12 @@ class App(customtkinter.CTk):
         Path("output").mkdir(exist_ok=True)
         for image_path in self.image_dictionary.keys():
             print(image_path)
-            watermarked_image = self.apply_watermark(image_path)
-            # watermarked_image.save(
-            #     fp=f"{self.save_location}/{Path(image_path).stem}_watermarked{Path(image_path).suffix}"
-            # )
+            # Convert mode of the returned image from apply_watermark method to "RGB" to allow saving image in original
+            # format that might not support "RGBA" e.g. JPEG.
+            watermarked_image = self.apply_watermark(image_path).convert("RGB")
+            watermarked_image.save(
+                fp=f"{self.save_location}/{Path(image_path).stem}_watermarked{Path(image_path).suffix}"
+            )
             watermarked_image.show()
 
 
