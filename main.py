@@ -330,7 +330,8 @@ class App(customtkinter.CTk):
     def get_font(self, font):
         self.font = f"fonts/{font}.ttf"
         print("Font", self.font)
-        self.update_watermark_preview(self.current_image_path)
+        # Call get_text_watermark method to update the text input before applying new color
+        self.get_text_watermark()
 
     def get_text_watermark_color(self):
         color = colorchooser.askcolor(title="Choose Text Watermark Color")[0]
