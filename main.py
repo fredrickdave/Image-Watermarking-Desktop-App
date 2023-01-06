@@ -338,7 +338,7 @@ class App(customtkinter.CTk):
         print(self.watermark_text_color)
         if color:
             self.watermark_text_color = color
-            self.update_watermark_preview(self.current_image_path)
+            self.get_text_watermark()
 
     def adjust_watermark_size(self, size):
         # tkinter slider command argument automatically pass in the slider value, so size parameter accepts it
