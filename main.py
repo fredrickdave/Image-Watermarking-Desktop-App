@@ -63,6 +63,7 @@ class App(customtkinter.CTk):
         self.controls_frame.save_location_entry.configure(state="normal")
         self.controls_frame.save_location_entry.insert(0, "/output")
         self.controls_frame.save_location_entry.configure(state="readonly")
+        self.controls_frame.text_watermark_entry.bind("<Return>", self.get_text_watermark)
         self.controls_frame.grid(row=0, column=0, rowspan=2, padx=20, pady=20, sticky="nsew")
 
         # Set watermark position radiobuttons' command to update watermark preview frame
@@ -163,6 +164,7 @@ class App(customtkinter.CTk):
         self.controls_frame.text_watermark_entry.configure(state="normal", placeholder_text="Enter your text here")
         self.controls_frame.apply_text_watermark_btn.configure(state="active")
         self.controls_frame.text_color_chooser_btn.configure(state="active")
+        self.controls_frame.font_option_menu.configure(state="normal")
         self.controls_frame.delete_all_image_btn.configure(state="active")
         self.controls_frame.delete_image_btn.configure(state="active")
         self.controls_frame.rotate_image_btn.configure(state="active")
@@ -175,6 +177,7 @@ class App(customtkinter.CTk):
         self.controls_frame.text_watermark_entry.delete(0, "end")
         self.controls_frame.text_watermark_entry.configure(state="disabled")
         self.controls_frame.text_color_chooser_btn.configure(state="disabled")
+        self.controls_frame.font_option_menu.configure(state="disabled")
         self.controls_frame.apply_text_watermark_btn.configure(state="disabled")
         self.controls_frame.delete_all_image_btn.configure(state="disabled")
         self.controls_frame.delete_image_btn.configure(state="disabled")
@@ -327,7 +330,7 @@ class App(customtkinter.CTk):
 
         return self.watermarked_image
 
-    def get_text_watermark(self):
+    def get_text_watermark(self, event=None):
         self.current_text_watermark = self.controls_frame.text_watermark_entry.get()
         print("self.current_text_watermark", self.current_text_watermark)
         self.update_watermark_preview(self.current_image_path)
