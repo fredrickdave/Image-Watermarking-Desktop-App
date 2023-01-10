@@ -57,6 +57,7 @@ class App(customtkinter.CTk):
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
         self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
         self.controls_frame.save_images_btn.configure(command=self.save_images)
+        self.controls_frame.tab_view.configure(command=lambda: self.update_watermark_preview(self.current_image_path))
         self.controls_frame.apply_text_watermark_btn.configure(command=self.get_text_watermark)
         self.controls_frame.text_color_chooser_btn.configure(command=self.get_text_watermark_color)
         self.controls_frame.font_option_menu.configure(command=self.get_font)
