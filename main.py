@@ -1,3 +1,4 @@
+import threading
 from pathlib import Path
 from tkinter import Button, colorchooser
 from tkinter.filedialog import askdirectory, askopenfilename, askopenfilenames
@@ -48,7 +49,7 @@ class App(customtkinter.CTk):
         self.save_location = "output"
 
         self.controls_frame = ControlsFrame(self)
-        self.controls_frame.add_image_btn.configure(command=self.add_image)
+        self.controls_frame.add_image_btn.configure(command=lambda: self.new_thread(self.add_image))
         self.controls_frame.delete_all_image_btn.configure(command=self.delete_all_image)
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
         self.controls_frame.watermark_opacity_slider.configure(command=self.adjust_watermark_opacity)
@@ -56,7 +57,7 @@ class App(customtkinter.CTk):
         self.controls_frame.choose_image_watermark_btn.configure(command=self.choose_image_watermark)
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
         self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
-        self.controls_frame.save_images_btn.configure(command=self.save_images)
+        self.controls_frame.save_images_btn.configure(command=lambda: self.new_thread(self.save_images))
         self.controls_frame.tab_view.configure(command=lambda: self.update_watermark_preview(self.current_image_path))
         self.controls_frame.apply_text_watermark_btn.configure(command=self.get_text_watermark)
         self.controls_frame.text_color_chooser_btn.configure(command=self.get_text_watermark_color)
@@ -74,6 +75,9 @@ class App(customtkinter.CTk):
         # Create initial image frames on the app window by calling these 2 methods
         self.create_watermark_preview_frame()
         self.create_image_preview_frame()
+
+        # Setup progressbar
+        self.progressbar = customtkinter.CTkProgressBar(self)
 
     def create_image_preview_frame(self):
         self.image_preview_frame = DoubleScrolledFrame(
@@ -98,7 +102,17 @@ class App(customtkinter.CTk):
 
         # Check if user added image(s). If none, exit this function
         if self.file_paths != []:
-            for path in self.file_paths:
+            # Store number of items that need to be processed in tasks variable so it can be used
+            # to determine progressbar step count
+            tasks = len(self.file_paths)
+            for index, path in enumerate(self.file_paths):
+                # Update progress bar
+                index += 1
+                self.progress_value = index / tasks
+                self.progressbar.set(self.progress_value)
+                self.progressbar.grid(row=14, column=0, columnspan=2, sticky="ew")
+                self.update_idletasks()
+
                 # Check for duplicates and save any new paths to image_dictionary
                 if path not in self.image_dictionary:
                     i = Image.open(path)
@@ -106,20 +120,21 @@ class App(customtkinter.CTk):
                     self.image_dictionary[path] = {"rotate": 0, "transparency": 0, "imagetk": ImageTk.PhotoImage(i)}
                 else:
                     print("Duplicate, skipped!")
-                self.enable_widgets()
         else:
             print("No Image was added")
             return None
+
+        # Hide progressbar once app is done adding all images
+        self.progressbar.grid_forget()
 
         # Set default current_image_path to the 1st image if it's first time importing image(s)
         if not self.current_image_path:
             self.current_image_path = list(self.image_dictionary.keys())[0]
 
+        # Enable widgets once all images are loaded
+        self.enable_widgets()
         self.update_image_list_preview()
         self.update_watermark_preview(self.current_image_path)
-        print(self.image_dictionary)
-        # self.update_status_bar()
-        print("End of Select Image method")
 
     def delete_image(self):
         # Get key/path of image next to the current image that will be deleted
@@ -414,7 +429,14 @@ class App(customtkinter.CTk):
         if self.save_location == "output":
             Path("output").mkdir(exist_ok=True)
 
-        for image_path in self.image_dictionary.keys():
+        # Store number of items that need to be processed in tasks variable so it can be used
+        # to determine progressbar step count
+        tasks = len(self.image_dictionary)
+
+        # Disable widgets while saving images to avoid unwated modification during save process
+        self.disable_widgets()
+
+        for index, image_path in enumerate(self.image_dictionary.keys()):
             print(image_path)
             # Convert mode of the returned image from apply_watermark method to "RGB" to allow saving image in original
             # format that might not support "RGBA" e.g. JPEG.
@@ -422,6 +444,28 @@ class App(customtkinter.CTk):
             watermarked_image.save(
                 fp=f"{self.save_location}/{Path(image_path).stem}_watermarked{Path(image_path).suffix}"
             )
+
+            # Update progress bar
+            index += 1
+            self.progress_value = index / tasks
+            self.progressbar.set(self.progress_value)
+            self.progressbar.grid(row=2, column=0, columnspan=2, sticky="ew")
+            self.update_idletasks()
+
+        # Hide progressbar once app is done saving all images
+        self.progressbar.grid_forget()
+
+        # Enable widgets back once done saving all images
+        self.enable_widgets()
+
+    def new_thread(self, target):
+        """This method will start a new thread for the target callable object.
+
+        Args:
+            target (class 'method'): Callable object or method to run
+        """
+        thread = threading.Thread(target=target)
+        thread.start()
 
 
 if __name__ == "__main__":
