@@ -9,6 +9,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageTk
 from ControlsFrame import ControlsFrame
 from DoubleScrolledFrame import DoubleScrolledFrame
 
+# Set image thumbnail size for watermark preview and image list preview frames
 THUMBNAIL_SIZE = (125, 125)
 FINAL_PREVIEW_SIZE = (690, 690)
 
@@ -80,19 +81,27 @@ class App(customtkinter.CTk):
         self.progressbar = customtkinter.CTkProgressBar(self)
 
     def create_image_preview_frame(self):
+        """This method will create a DoubleScrolledFrame and display it on the main App window."""
         self.image_preview_frame = DoubleScrolledFrame(
             self, frame="image_preview", width=750, height=120, highlightbackground="#d1d5d8", highlightthickness=2
         )
         self.image_preview_frame.grid(row=1, column=1, pady=(0, 20), sticky="news")
 
     def create_watermark_preview_frame(self):
+        """This method will create a DoubleScrolledFrame and display it on the main App window."""
         self.watermark_preview_frame = DoubleScrolledFrame(
             self, frame="watermark_preview", width=750, height=500, highlightbackground="#d1d5d8", highlightthickness=2
         )
         self.watermark_preview_frame.grid(row=0, column=1, pady=(20, 10), sticky="nsew")
 
     def add_image(self):
-        print(f"Watermark Position: {self.controls_frame.watermark_position.get()}")
+        """This method calls the Open File Dialog menu to let the user add one or more images, then stores the returned
+        list of files names to image_dictionary variable.
+
+        Returns:
+            None: Returns None to stop this method if the user closed the file dialog menu without selecting
+            any image.
+        """
         self.file_paths = list(
             askopenfilenames(
                 title="Select the image(s) you want to watermark",
@@ -100,7 +109,7 @@ class App(customtkinter.CTk):
             )
         )
 
-        # Check if user added image(s). If none, exit this function
+        # Check if user added image(s). If none, exit this function by returning None
         if self.file_paths != []:
             # Disable add button while images are added to avoid unwated issue during load process
             self.controls_frame.add_image_btn.configure(state="disabled")
@@ -140,26 +149,28 @@ class App(customtkinter.CTk):
         self.update_watermark_preview(self.current_image_path)
 
     def delete_image(self):
-        # Get key/path of image next to the current image that will be deleted
+        """This method deletes the image currently displayed in the watermark_preview_frame from the image_dictionary
+        variable."""
+        # The code below will get the key/path of image next to the current image that will be deleted.
         self.next_image = None
         self.previous_image = None
         temp_dictionary = iter(self.image_dictionary)
         for image_path in temp_dictionary:
             if image_path == self.current_image_path:
-                print("Current Image", image_path)
                 self.next_image = next(temp_dictionary, None)
-                print("Next Image", self.next_image)
                 break
             self.previous_image = image_path
-        print("Previous Image", self.previous_image)
         self.image_dictionary.pop(self.current_image_path)
 
+        # Update the current_image_path value to store the value of next_image variable, to be displayed in
+        # watermark_preview_frame.
         if self.next_image:
             self.current_image_path = self.next_image
-        # If next_image is empty and image_dictionary is not empty, set current_image_path to the
-        # new last image in image_dictionary
+        # If next_image is empty and image_dictionary is not empty, change value of current_image_path to the
+        # value of image path stored in previous_image variable.
         elif not self.next_image and self.image_dictionary:
             self.current_image_path = self.previous_image
+        # If no remaining images in the image_dictionary variable, reset the app widgets to default state.
         else:
             self.current_image_path = None
             self.current_image_watermark_path = None
@@ -174,6 +185,7 @@ class App(customtkinter.CTk):
         self.update_watermark_preview(self.current_image_path)
 
     def delete_all_image(self):
+        """This methods deletes all images added by user and sets all selected watermark details back to None value."""
         self.image_dictionary.clear()
         self.current_image_path = None
         self.current_image_watermark_path = None
@@ -187,9 +199,9 @@ class App(customtkinter.CTk):
         self.create_image_preview_frame()
         self.create_watermark_preview_frame()
         self.disable_widgets()
-        print("Removed All Images")
 
     def enable_widgets(self):
+        """This method enables all widgets that are used for image operations."""
         self.controls_frame.choose_image_watermark_btn.configure(state="active")
         self.controls_frame.text_watermark_entry.configure(state="normal", placeholder_text="Enter your text here")
         self.controls_frame.tab_view.configure(state="normal")
@@ -207,6 +219,7 @@ class App(customtkinter.CTk):
             buttons.configure(state="normal")
 
     def disable_widgets(self):
+        """This method disables all widgets that are used for image operations."""
         self.controls_frame.choose_image_watermark_btn.configure(state="disabled")
         self.controls_frame.tab_view.configure(state="disabled")
         self.controls_frame.text_watermark_entry.configure(state="disabled")
@@ -224,6 +237,10 @@ class App(customtkinter.CTk):
             buttons.configure(state="disabled")
 
     def rotate_image(self):
+        """This method updates the rotate value of the selected image in the image_dictionary by using the
+        current_image_path. It adds 90 degrees when run, and if it exceeds 270 degrees, revert the rotate
+        value back to 0.
+        """
         # Update angle value of current image
         current_angle = self.image_dictionary[self.current_image_path]["rotate"]
         if current_angle < 270:
@@ -237,17 +254,22 @@ class App(customtkinter.CTk):
         original_image.thumbnail(THUMBNAIL_SIZE)
         rotated_image = original_image.rotate(angle=current_angle, expand=True)
         self.image_dictionary[self.current_image_path]["imagetk"] = ImageTk.PhotoImage(rotated_image)
-        # print(self.image_dictionary[self.current_image_path])
         self.update_image_list_preview()
         self.update_watermark_preview(self.current_image_path)
 
     def update_watermark_preview(self, image_path):
+        """This methods recreates the watermark_preview_frame to update the displayed images whenever there's any
+        modification on the selected image to be displayed. For example: An image was added or deleted, or the
+        watermark needs to be updated on the selected image.
+
+        Args:
+            image_path (str): Full path of the image that will be displayed inside watermark_preview_frame widget.
+        """
         self.watermark_preview_frame.destroy()
         self.create_watermark_preview_frame()
-        # print("Image Path", image_path)
+
         # Exit function if passed image_path is empty/None value
         if not image_path:
-            print(f"Stopped update_watermark_preview. current image is {image_path}")
             return
 
         # Update current_image_path to store the selected image_path to show on watermark preview frame
@@ -261,7 +283,6 @@ class App(customtkinter.CTk):
             current_angle = self.image_dictionary[self.current_image_path]["rotate"]
             if current_angle > 0:
                 self.result = self.result.rotate(angle=current_angle, expand=True)
-            print("No chosen watermark yet")
         else:
             self.result = self.apply_watermark(self.current_image_path)
             self.result.thumbnail(FINAL_PREVIEW_SIZE)
@@ -271,14 +292,16 @@ class App(customtkinter.CTk):
         self.preview_image.grid(row=0, column=0, padx=25, pady=10, sticky="news")
 
     def update_image_list_preview(self):
+        """This methods recreates the image_preview_frame to update the displayed images whenever an image is added
+        or deleted.
+        """
         self.image_preview_frame.destroy()
         self.create_image_preview_frame()
         self.watermark_preview_frame.destroy()
         self.create_watermark_preview_frame()
 
-        # FIXME - Correct image is not updating properly in watermark preview frame - FIXED
-        # Solution found at:
-        # https://stackoverflow.com/questions/10865116/tkinter-creating-buttons-in-for-loop-passing-command-arguments
+        # Display all images in a vertical row using button widgets. Clicking each image buttons will call the
+        # update_watermark_preview method to update watermark image preview
         for index, path in enumerate(self.image_dictionary.keys()):
             Button(
                 self.image_preview_frame,
@@ -289,6 +312,9 @@ class App(customtkinter.CTk):
             ).grid(row=0, column=index, padx=10, pady=5)
 
     def choose_image_watermark(self):
+        """This method will prompt the user to choose an image to use as watermark. It then saves the path of selected
+        image to current_image_watermark_path variable.
+        """
         self.current_image_watermark_path = askopenfilename(title="Choose the watermark image you want to use")
         if self.current_image_watermark_path:
             self.controls_frame.watermark_location_entry.configure(state="normal")
@@ -298,6 +324,15 @@ class App(customtkinter.CTk):
             self.update_watermark_preview(self.current_image_path)
 
     def apply_watermark(self, image_path):
+        """This method applies a watermark to the passed image path. Depending on the current tab
+        selected on the tab_view widget, it will either apply a text or image watermark to the original image.
+
+        Args:
+            image_path (str): Full path of the image where the watermark will be applied to.
+
+        Returns:
+            PIL Image: Returns a PIL Image Object of the image with applied watermark.
+        """
         self.original_image = Image.open(image_path)
         current_angle = self.image_dictionary[image_path]["rotate"]
         if current_angle > 0:
@@ -309,6 +344,7 @@ class App(customtkinter.CTk):
         )
         self.watermarked_image.paste(self.original_image, (0, 0))
 
+        # Apply the watermark based on the current tab(Image or Text) selected by the user.
         current_tab = self.controls_frame.tab_view.get()
         if current_tab == "Image Watermark" and self.current_image_watermark_path:
             self.watermark = Image.open(self.current_image_watermark_path)
@@ -316,17 +352,12 @@ class App(customtkinter.CTk):
             # Adjust watermark size to be pasted based on the watermark_size value chosen by user. Default is 300px
             self.watermark.thumbnail(self.image_watermark_size)
 
-            # Adjust watermark opacity on a percent scale
+            # Adjust watermark opacity on a percent scale. Convert image to RGBA if it doesn't have transparency.
             if self.watermark.mode != "RGBA":
                 self.watermark = self.watermark.convert("RGBA")
                 alpha = Image.new("L", self.watermark.size, 255)
                 self.watermark.putalpha(alpha)
             paste_mask = self.watermark.split()[3].point(lambda i: i * self.watermark_opacity / 100.0)
-
-            print("Watermark Mode", self.watermark.mode)
-
-            print(f"Original image Width: {self.original_image_width}, Height: {self.original_image_height}")
-            print("Watermark Position", self.get_watermark_position(self.watermark.size))
             self.watermarked_image.paste(
                 self.watermark, self.get_watermark_position(self.watermark.size), mask=paste_mask
             )
@@ -340,22 +371,13 @@ class App(customtkinter.CTk):
             d = ImageDraw.Draw(txt)
 
             # Calculate the size of text watermark input
-            bbox = d.textbbox((40, 40), self.current_text_watermark, font=font)
-            text_size = (bbox[2] - bbox[0], bbox[3] - bbox[1])
-            # height = d.textsize(self.current_text_watermark, font=font, direction="ttb")
             text_size = d.textsize(text=self.current_text_watermark, font=font)
-            print("Original Image Size:, ", self.original_image.size)
-            print("Bbox: ", bbox)
-            print("Text Size", text_size)
-            print("Text Watermark Position: ", self.get_watermark_position(text_size))
 
             # This section will draw the text.
             # Get the RGB values from self.watermark_text_color and apply it to fill
             R, G, B = self.watermark_text_color
             # This will compute the correct alpha value based on the current percentage value of opacity slider.
             A = int(255 * (self.watermark_opacity * 0.01))
-            print("Opacity Slider:", self.watermark_opacity)
-            print("Opacity A: ", A)
             d.text(
                 xy=self.get_watermark_position(text_size),
                 text=self.current_text_watermark,
@@ -369,35 +391,58 @@ class App(customtkinter.CTk):
         return self.watermarked_image
 
     def get_text_watermark(self, event=None):
+        """This method updates the current_text_watermark variable to store the returned current string from the
+        text_watermark_entry widget.
+
+        Args:
+            event (_type_, optional): _description_. Defaults to None.
+        """
         self.current_text_watermark = self.controls_frame.text_watermark_entry.get()
-        print("self.current_text_watermark", self.current_text_watermark)
         self.update_watermark_preview(self.current_image_path)
 
     def get_font(self, font):
+        """This method updates the font variable to store the selected font name by the user using the font_option_menu
+        widget.
+
+        Args:
+            font (str): This stores the font name value passed on by the font_option_menu widget.
+        """
         self.font = f"fonts/{font}.ttf"
-        print("Font", self.font)
-        # Call get_text_watermark method to update the text input before applying new color
+        # Call get_text_watermark method to update the text input before applying new font
         self.get_text_watermark()
 
     def get_text_watermark_color(self):
+        """This method will open the colorchooser dialog and stores the returned RGB value of selected color to
+        watermark_text_color variable.
+        """
         color = colorchooser.askcolor(title="Choose Text Watermark Color")[0]
-        print(self.watermark_text_color)
         if color:
             self.watermark_text_color = color
+            # Call get_text_watermark method to update the text input before applying new font color
             self.get_text_watermark()
 
     def adjust_watermark_size(self, size):
+        """This method captures the current value of watermark_size_slider widget and stores it on both
+        image_watermark_size and text_watermark_size variables.
+
+        Args:
+            size (float): This stores the value passed on by the watermark_size_slider widget.
+        """
         # tkinter slider command argument automatically pass in the slider value, so size parameter accepts it
         self.image_watermark_size = (int(size), int(size))
+        # Cut the size value by half for text watermark to avoid text from being too big.
         self.text_watermark_size = int(size * 0.50)
-        # print("Watermark Image Size", self.image_watermark_size)
-        # print("Watermark Text Size", self.text_watermark_size)
         self.update_watermark_preview(self.current_image_path)
 
     def adjust_watermark_opacity(self, opacity):
+        """This method captures the current value of watermark_opacity_slider widget and stores it on both
+        watermark_opacity variable.
+
+        Args:
+            opacity (float): This stores the value passed on by the variable widget.
+        """
         # tkinter slider command argument automatically pass in the slider value, so opacity parameter accepts it
         self.watermark_opacity = int(opacity)
-        print("Watermark Opacity", self.watermark_opacity)
         self.update_watermark_preview(self.current_image_path)
 
     def get_watermark_position(self, watermark_size):
@@ -409,7 +454,6 @@ class App(customtkinter.CTk):
 
         watermark_width = watermark_size[0]
         watermark_height = watermark_size[1]
-        # print(f"Watermark Size: ({watermark_width, watermark_height})")
 
         if self.controls_frame.watermark_position.get() == "bottom-left":
             return (self.watermark_margin, self.original_image_height - watermark_height - self.watermark_margin)
@@ -431,9 +475,11 @@ class App(customtkinter.CTk):
             )
 
     def choose_save_location(self):
+        """This method will prompt the user to choose a save location for watermarked images, and store the save path
+        to save_location variable.
+        """
         self.save_location = askdirectory(title="Choose Save Folder location")  # Returns None if user clicked Cancel
         if self.save_location:
-            print(self.save_location)
             self.controls_frame.save_location_entry.configure(state="normal")
             self.controls_frame.save_location_entry.delete(0, "end")
             self.controls_frame.save_location_entry.insert(0, self.save_location)
@@ -441,7 +487,6 @@ class App(customtkinter.CTk):
         else:
             # Set default save location back to output folder if user did not select a save folder when prompted
             self.save_location = "output"
-            print("Clicked cancel")
 
     def save_images(self):
         """This method will save all images that were added to the image_dictionary with the applied watermark.
@@ -462,7 +507,6 @@ class App(customtkinter.CTk):
         self.controls_frame.add_image_btn.configure(state="disabled")
 
         for index, image_path in enumerate(self.image_dictionary.keys()):
-            print(image_path)
             # Convert mode of the returned image from apply_watermark method to "RGB" to allow saving image in original
             # format that might not support "RGBA" e.g. JPEG.
             watermarked_image = self.apply_watermark(image_path).convert("RGB")
@@ -488,7 +532,7 @@ class App(customtkinter.CTk):
         """This method will start a new thread for the target callable object.
 
         Args:
-            target (class 'method'): Callable object or method to run
+            target (class 'method'): Callable object or method to run.
         """
         thread = threading.Thread(target=target)
         thread.start()
