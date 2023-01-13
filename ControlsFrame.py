@@ -8,7 +8,7 @@ class ControlsFrame(customtkinter.CTkFrame):
         super().__init__(*args, **kwargs)
 
         # Setup Tab view that contains text and image watermark widgets
-        self.tab_view = customtkinter.CTkTabview(self, height=190)
+        self.tab_view = customtkinter.CTkTabview(self, height=190, state="disabled")
         self.tab_view.grid(row=0, column=0, columnspan=2, padx=5, pady=(0, 10))
         self.image_watermark_tab = self.tab_view.add("Image Watermark")
         self.text_watermark_tab = self.tab_view.add("Text Watermark")
@@ -70,10 +70,7 @@ class ControlsFrame(customtkinter.CTkFrame):
         self.radiobuttons = []
         for text, pos in self.modes:
             self.watermark_pos_radiobutton = customtkinter.CTkRadioButton(
-                master=self,
-                text=text,
-                variable=self.watermark_position,
-                value=pos,
+                master=self, text=text, variable=self.watermark_position, value=pos, state="disabled"
             )
             self.radiobuttons.append(self.watermark_pos_radiobutton)
 
@@ -103,8 +100,8 @@ class ControlsFrame(customtkinter.CTkFrame):
         self.watermark_opacity_slider.set(100)
         self.watermark_opacity_slider.grid(row=8, column=0, columnspan=2, padx=10, pady=(0, 10), sticky="ew")
 
-        self.save_location = customtkinter.CTkButton(self, text="Save Location")
-        self.save_location.grid(row=9, column=0, padx=10, pady=10)
+        self.save_location_btn = customtkinter.CTkButton(self, text="Save Location", state="disabled")
+        self.save_location_btn.grid(row=9, column=0, padx=10, pady=10)
         self.save_location_entry = customtkinter.CTkEntry(self, placeholder_text="/output", width=325, state="readonly")
         self.save_location_entry.grid(
             row=10,

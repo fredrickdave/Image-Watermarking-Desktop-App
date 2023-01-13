@@ -53,7 +53,7 @@ class App(customtkinter.CTk):
         self.controls_frame.delete_all_image_btn.configure(command=self.delete_all_image)
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
         self.controls_frame.watermark_opacity_slider.configure(command=self.adjust_watermark_opacity)
-        self.controls_frame.save_location.configure(command=self.choose_save_location)
+        self.controls_frame.save_location_btn.configure(command=self.choose_save_location)
         self.controls_frame.choose_image_watermark_btn.configure(command=self.choose_image_watermark)
         self.controls_frame.delete_image_btn.configure(command=self.delete_image)
         self.controls_frame.rotate_image_btn.configure(command=self.rotate_image)
@@ -102,6 +102,8 @@ class App(customtkinter.CTk):
 
         # Check if user added image(s). If none, exit this function
         if self.file_paths != []:
+            # Disable add button while images are added to avoid unwated issue during load process
+            self.controls_frame.add_image_btn.configure(state="disabled")
             # Store number of items that need to be processed in tasks variable so it can be used
             # to determine progressbar step count
             tasks = len(self.file_paths)
@@ -132,6 +134,7 @@ class App(customtkinter.CTk):
             self.current_image_path = list(self.image_dictionary.keys())[0]
 
         # Enable widgets once all images are loaded
+        self.controls_frame.add_image_btn.configure(state="active")
         self.enable_widgets()
         self.update_image_list_preview()
         self.update_watermark_preview(self.current_image_path)
@@ -159,15 +162,26 @@ class App(customtkinter.CTk):
             self.current_image_path = self.previous_image
         else:
             self.current_image_path = None
+            self.current_image_watermark_path = None
+            self.current_text_watermark = None
+            self.controls_frame.watermark_location_entry.configure(state="normal")
+            self.controls_frame.watermark_location_entry.delete(0, "end")
+            self.controls_frame.watermark_location_entry.configure(state="readonly")
+            self.controls_frame.watermark_location_entry.delete(0, "end")
             self.disable_widgets()
 
         self.update_image_list_preview()
         self.update_watermark_preview(self.current_image_path)
-        print(self.current_image_path)
 
     def delete_all_image(self):
         self.image_dictionary.clear()
         self.current_image_path = None
+        self.current_image_watermark_path = None
+        self.current_text_watermark = None
+        self.controls_frame.watermark_location_entry.configure(state="normal")
+        self.controls_frame.watermark_location_entry.delete(0, "end")
+        self.controls_frame.watermark_location_entry.configure(state="readonly")
+        self.controls_frame.text_watermark_entry.delete(0, "end")
         self.image_preview_frame.destroy()
         self.watermark_preview_frame.destroy()
         self.create_image_preview_frame()
@@ -178,22 +192,27 @@ class App(customtkinter.CTk):
     def enable_widgets(self):
         self.controls_frame.choose_image_watermark_btn.configure(state="active")
         self.controls_frame.text_watermark_entry.configure(state="normal", placeholder_text="Enter your text here")
+        self.controls_frame.tab_view.configure(state="normal")
         self.controls_frame.apply_text_watermark_btn.configure(state="active")
         self.controls_frame.text_color_chooser_btn.configure(state="active")
         self.controls_frame.font_option_menu.configure(state="normal")
+        self.controls_frame.save_location_btn.configure(state="active")
         self.controls_frame.delete_all_image_btn.configure(state="active")
         self.controls_frame.delete_image_btn.configure(state="active")
         self.controls_frame.rotate_image_btn.configure(state="active")
         self.controls_frame.save_images_btn.configure(state="active")
         self.controls_frame.watermark_opacity_slider.configure(state="normal")
         self.controls_frame.watermark_size_slider.configure(state="normal")
+        for buttons in self.controls_frame.radiobuttons:
+            buttons.configure(state="normal")
 
     def disable_widgets(self):
         self.controls_frame.choose_image_watermark_btn.configure(state="disabled")
-        self.controls_frame.text_watermark_entry.delete(0, "end")
+        self.controls_frame.tab_view.configure(state="disabled")
         self.controls_frame.text_watermark_entry.configure(state="disabled")
         self.controls_frame.text_color_chooser_btn.configure(state="disabled")
         self.controls_frame.font_option_menu.configure(state="disabled")
+        self.controls_frame.save_location_btn.configure(state="disabled")
         self.controls_frame.apply_text_watermark_btn.configure(state="disabled")
         self.controls_frame.delete_all_image_btn.configure(state="disabled")
         self.controls_frame.delete_image_btn.configure(state="disabled")
@@ -201,6 +220,8 @@ class App(customtkinter.CTk):
         self.controls_frame.save_images_btn.configure(state="disabled")
         self.controls_frame.watermark_opacity_slider.configure(state="disabled")
         self.controls_frame.watermark_size_slider.configure(state="disabled")
+        for buttons in self.controls_frame.radiobuttons:
+            buttons.configure(state="disabled")
 
     def rotate_image(self):
         # Update angle value of current image
@@ -409,7 +430,7 @@ class App(customtkinter.CTk):
             )
 
     def choose_save_location(self):
-        self.save_location = askdirectory(title="Choose Save Folder location")
+        self.save_location = askdirectory(title="Choose Save Folder location")  # Returns None if user clicked Cancel
         if self.save_location:
             print(self.save_location)
             self.controls_frame.save_location_entry.configure(state="normal")
@@ -417,6 +438,8 @@ class App(customtkinter.CTk):
             self.controls_frame.save_location_entry.insert(0, self.save_location)
             self.controls_frame.save_location_entry.configure(state="readonly")
         else:
+            # Set default save location back to output folder if user did not select a save folder when prompted
+            self.save_location = "output"
             print("Clicked cancel")
 
     def save_images(self):
@@ -433,8 +456,9 @@ class App(customtkinter.CTk):
         # to determine progressbar step count
         tasks = len(self.image_dictionary)
 
-        # Disable widgets while saving images to avoid unwated modification during save process
+        # Disable widgets while saving images to avoid unwated user modification during save process
         self.disable_widgets()
+        self.controls_frame.add_image_btn.configure(state="disabled")
 
         for index, image_path in enumerate(self.image_dictionary.keys()):
             print(image_path)
@@ -456,6 +480,7 @@ class App(customtkinter.CTk):
         self.progressbar.grid_forget()
 
         # Enable widgets back once done saving all images
+        self.controls_frame.add_image_btn.configure(state="active")
         self.enable_widgets()
 
     def new_thread(self, target):
