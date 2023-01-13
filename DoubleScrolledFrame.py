@@ -18,7 +18,7 @@ class DoubleScrolledFrame:
     You need to provide the controller separately.
     """
 
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, frame, **kwargs):
         width = kwargs.pop("width", None)
         height = kwargs.pop("height", None)
         self.outer = tk.Frame(master, **kwargs)
@@ -47,6 +47,7 @@ class DoubleScrolledFrame:
         self.inner.bind("<Configure>", self._on_frame_configure)
 
         self.outer_attr = set(dir(tk.Widget))
+        self.frame_name = frame
 
     def __getattr__(self, item):
         if item in self.outer_attr:
@@ -74,7 +75,13 @@ class DoubleScrolledFrame:
 
     def _on_mousewheel(self, event):
         """Linux uses event.num; Windows / Mac uses event.delta"""
-        func = self.canvas.xview_scroll if event.state & 1 else self.canvas.yview_scroll
+
+        # Change scroll behavior to horintal scroll for image preview frame.
+        if self.frame_name == "image_preview":
+            func = self.canvas.yview_scroll if event.state & 1 else self.canvas.xview_scroll
+        else:
+            func = self.canvas.xview_scroll if event.state & 1 else self.canvas.yview_scroll
+
         if event.num == 4 or event.delta > 0:
             func(-1, "units")
         elif event.num == 5 or event.delta < 0:

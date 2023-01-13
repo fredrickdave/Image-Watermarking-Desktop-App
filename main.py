@@ -19,7 +19,7 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.geometry("1150x720")
+        self.geometry("1170x720")
         self.title("Mass Watermarker")
         self.minsize(300, 200)
         self.resizable(width=False, height=False)
@@ -66,7 +66,7 @@ class App(customtkinter.CTk):
         self.controls_frame.save_location_entry.insert(0, "/output")
         self.controls_frame.save_location_entry.configure(state="readonly")
         self.controls_frame.text_watermark_entry.bind("<Return>", self.get_text_watermark)
-        self.controls_frame.grid(row=0, column=0, rowspan=2, padx=20, pady=20, sticky="nsew")
+        self.controls_frame.grid(row=0, column=0, rowspan=2, padx=(20, 10), pady=20, sticky="nsew")
 
         # Set watermark position radiobuttons' command to update watermark preview frame
         for buttons in self.controls_frame.radiobuttons:
@@ -81,13 +81,13 @@ class App(customtkinter.CTk):
 
     def create_image_preview_frame(self):
         self.image_preview_frame = DoubleScrolledFrame(
-            self, width=750, height=120, highlightbackground="#d1d5d8", highlightthickness=2
+            self, frame="image_preview", width=750, height=120, highlightbackground="#d1d5d8", highlightthickness=2
         )
         self.image_preview_frame.grid(row=1, column=1, pady=(0, 20), sticky="news")
 
     def create_watermark_preview_frame(self):
         self.watermark_preview_frame = DoubleScrolledFrame(
-            self, width=750, height=500, highlightbackground="#d1d5d8", highlightthickness=2
+            self, frame="watermark_preview", width=750, height=500, highlightbackground="#d1d5d8", highlightthickness=2
         )
         self.watermark_preview_frame.grid(row=0, column=1, pady=(20, 10), sticky="nsew")
 
