@@ -318,6 +318,7 @@ class App(customtkinter.CTk):
 
             # Adjust watermark opacity on a percent scale
             if self.watermark.mode != "RGBA":
+                self.watermark = self.watermark.convert("RGBA")
                 alpha = Image.new("L", self.watermark.size, 255)
                 self.watermark.putalpha(alpha)
             paste_mask = self.watermark.split()[3].point(lambda i: i * self.watermark_opacity / 100.0)
