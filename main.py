@@ -142,11 +142,11 @@ class App(customtkinter.CTk):
         if not self.current_image_path:
             self.current_image_path = list(self.image_dictionary.keys())[0]
 
-        # Enable widgets once all images are loaded
-        self.controls_frame.add_image_btn.configure(state="active")
-        self.enable_widgets()
+        # Update image preview frames and enable widgets once all images are loaded
         self.update_image_list_preview()
         self.update_watermark_preview(self.current_image_path)
+        self.controls_frame.add_image_btn.configure(state="active")
+        self.enable_widgets()
 
     def delete_image(self):
         """This method deletes the image currently displayed in the watermark_preview_frame from the image_dictionary
@@ -175,6 +175,7 @@ class App(customtkinter.CTk):
             self.current_image_path = None
             self.current_image_watermark_path = None
             self.current_text_watermark = None
+            self.image_preview_buttons = None
             self.controls_frame.watermark_location_entry.configure(state="normal")
             self.controls_frame.watermark_location_entry.delete(0, "end")
             self.controls_frame.watermark_location_entry.configure(state="readonly")
@@ -190,6 +191,7 @@ class App(customtkinter.CTk):
         self.current_image_path = None
         self.current_image_watermark_path = None
         self.current_text_watermark = None
+        self.image_preview_buttons = None
         self.controls_frame.watermark_location_entry.configure(state="normal")
         self.controls_frame.watermark_location_entry.delete(0, "end")
         self.controls_frame.watermark_location_entry.configure(state="readonly")
@@ -218,6 +220,11 @@ class App(customtkinter.CTk):
         for buttons in self.controls_frame.radiobuttons:
             buttons.configure(state="normal")
 
+        # Check if image_preview_buttons list is not empty before changing state to avoid error
+        if self.image_preview_buttons:
+            for button in self.image_preview_buttons:
+                button.configure(state="active")
+
     def disable_widgets(self):
         """This method disables all widgets that are used for image operations."""
         self.controls_frame.choose_image_watermark_btn.configure(state="disabled")
@@ -233,8 +240,13 @@ class App(customtkinter.CTk):
         self.controls_frame.save_images_btn.configure(state="disabled")
         self.controls_frame.watermark_opacity_slider.configure(state="disabled")
         self.controls_frame.watermark_size_slider.configure(state="disabled")
-        for buttons in self.controls_frame.radiobuttons:
-            buttons.configure(state="disabled")
+        for radiobutton in self.controls_frame.radiobuttons:
+            radiobutton.configure(state="disabled")
+
+        # Check if image_preview_buttons list is not empty before changing state to avoid error
+        if self.image_preview_buttons:
+            for button in self.image_preview_buttons:
+                button.configure(state="disabled")
 
     def rotate_image(self):
         """This method updates the rotate value of the selected image in the image_dictionary by using the
@@ -302,14 +314,18 @@ class App(customtkinter.CTk):
 
         # Display all images in a vertical row using button widgets. Clicking each image buttons will call the
         # update_watermark_preview method to update watermark image preview
+        self.image_preview_buttons = []
         for index, path in enumerate(self.image_dictionary.keys()):
-            Button(
-                self.image_preview_frame,
-                image=self.image_dictionary[path].get("imagetk"),
-                text="",
-                borderwidth=0,
-                command=lambda path=path: self.update_watermark_preview(path),
-            ).grid(row=0, column=index, padx=10, pady=5)
+            self.image_preview_buttons.append(
+                Button(
+                    self.image_preview_frame,
+                    image=self.image_dictionary[path].get("imagetk"),
+                    text="",
+                    borderwidth=0,
+                    command=lambda path=path: self.update_watermark_preview(path),
+                )
+            )
+            self.image_preview_buttons[index].grid(row=0, column=index, padx=10, pady=5)
 
     def choose_image_watermark(self):
         """This method will prompt the user to choose an image to use as watermark. It then saves the path of selected
