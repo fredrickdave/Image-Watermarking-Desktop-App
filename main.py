@@ -20,9 +20,8 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.geometry("1170x720")
+        self.geometry("1170x750")
         self.title("Mass Watermarker")
-        self.minsize(300, 200)
         self.resizable(width=False, height=False)
 
         # Store image path and associated attributes using the format below
@@ -50,6 +49,9 @@ class App(customtkinter.CTk):
         self.save_location = "output"
 
         self.controls_frame = ControlsFrame(self)
+        self.controls_frame.grid(row=0, column=0, rowspan=2, padx=(20, 10), pady=20, sticky="nsew")
+
+        # Assign
         self.controls_frame.add_image_btn.configure(command=lambda: self.new_thread(self.add_image))
         self.controls_frame.delete_all_image_btn.configure(command=self.delete_all_image)
         self.controls_frame.watermark_size_slider.configure(command=self.adjust_watermark_size)
@@ -67,7 +69,6 @@ class App(customtkinter.CTk):
         self.controls_frame.save_location_entry.insert(0, "/output")
         self.controls_frame.save_location_entry.configure(state="readonly")
         self.controls_frame.text_watermark_entry.bind("<Return>", self.get_text_watermark)
-        self.controls_frame.grid(row=0, column=0, rowspan=2, padx=(20, 10), pady=20, sticky="nsew")
 
         # Set watermark position radiobuttons' command to update watermark preview frame
         for buttons in self.controls_frame.radiobuttons:
@@ -79,6 +80,9 @@ class App(customtkinter.CTk):
 
         # Setup progressbar
         self.progressbar = customtkinter.CTkProgressBar(self)
+
+        # Add empty label to extend progress bar across full length of app window
+        customtkinter.CTkLabel(self, text="     ").grid(row=0, column=2)
 
     def create_image_preview_frame(self):
         """This method will create a DoubleScrolledFrame and display it on the main App window."""
@@ -121,7 +125,7 @@ class App(customtkinter.CTk):
                 index += 1
                 self.progress_value = index / tasks
                 self.progressbar.set(self.progress_value)
-                self.progressbar.grid(row=14, column=0, columnspan=2, sticky="ew")
+                self.progressbar.grid(row=2, column=0, columnspan=3, sticky="ew")
                 self.update_idletasks()
 
                 # Check for duplicates and save any new paths to image_dictionary

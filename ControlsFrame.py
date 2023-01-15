@@ -56,7 +56,7 @@ class ControlsFrame(customtkinter.CTkFrame):
         self.font_option_menu.set("Roboto-Regular")
 
         # Radiobuttons - Watermark Position
-        customtkinter.CTkLabel(self, text="Position:").grid(row=1, column=0, sticky="w", padx=15)
+        customtkinter.CTkLabel(self, text="Watermark Position:").grid(row=1, column=0, sticky="w", padx=15)
         self.modes = [
             ("Bottom-Left", "bottom-left"),
             ("Top-Left", "top-left"),
@@ -85,7 +85,7 @@ class ControlsFrame(customtkinter.CTkFrame):
             column += 1
 
         # Size Slider value is based on percentage
-        customtkinter.CTkLabel(self, text="Size").grid(row=5, column=0, padx=15, pady=(5, 0), sticky="w")
+        customtkinter.CTkLabel(self, text="Watermark Size").grid(row=5, column=0, padx=15, pady=(5, 0), sticky="w")
         self.watermark_size_slider = customtkinter.CTkSlider(
             self, from_=100, to=700, orientation="horizontal", state="disabled"
         )
@@ -93,7 +93,7 @@ class ControlsFrame(customtkinter.CTkFrame):
         self.watermark_size_slider.grid(row=6, column=0, columnspan=2, padx=10, pady=(0, 10), sticky="ew")
 
         # Opacity Slider value is based on percentage
-        customtkinter.CTkLabel(self, text="Opacity").grid(row=7, column=0, padx=15, sticky="w")
+        customtkinter.CTkLabel(self, text="Watermark Opacity").grid(row=7, column=0, padx=15, sticky="w")
         self.watermark_opacity_slider = customtkinter.CTkSlider(
             self, from_=10, to=100, orientation="horizontal", state="disabled"
         )
@@ -112,14 +112,16 @@ class ControlsFrame(customtkinter.CTkFrame):
             sticky="ew",
         )
 
+        customtkinter.CTkLabel(self, text="Selected Image Options").grid(row=11, column=0, padx=15, sticky="w")
         self.rotate_image_btn = customtkinter.CTkButton(self, text="Rotate", state="disabled")
-        self.rotate_image_btn.grid(row=11, column=0, padx=10, pady=10)
+        self.rotate_image_btn.grid(row=12, column=0, padx=10, pady=(0, 10))
         self.delete_image_btn = customtkinter.CTkButton(self, text="Delete", state="disabled")
-        self.delete_image_btn.grid(row=11, column=1, padx=10, pady=10)
+        self.delete_image_btn.grid(row=12, column=1, padx=10, pady=(0, 10))
 
+        customtkinter.CTkLabel(self, text="Global Image Options").grid(row=13, column=0, padx=15, sticky="w")
         self.add_image_btn = customtkinter.CTkButton(self, text="Add Image(s)")
-        self.add_image_btn.grid(row=12, column=1, padx=10, pady=10)
+        self.add_image_btn.grid(row=14, column=1, padx=10, pady=(0, 10))
         self.delete_all_image_btn = customtkinter.CTkButton(self, text="Delete All", state="disabled")
-        self.delete_all_image_btn.grid(row=12, column=0, padx=10, pady=10)
+        self.delete_all_image_btn.grid(row=14, column=0, padx=10, pady=(0, 10))
         self.save_images_btn = customtkinter.CTkButton(self, text="Save All Images", state="disabled")
-        self.save_images_btn.grid(row=13, column=0, columnspan=2, padx=15, pady=10, sticky="ew")
+        self.save_images_btn.grid(row=15, column=0, columnspan=2, padx=18, pady=10, sticky="ew")
