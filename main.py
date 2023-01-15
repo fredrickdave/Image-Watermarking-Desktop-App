@@ -105,7 +105,7 @@ class App(customtkinter.CTk):
         self.file_paths = list(
             askopenfilenames(
                 title="Select the image(s) you want to watermark",
-                filetypes=[("image files", "*.png;*.jpg"), ("all files", "*.*")],
+                filetypes=[("image files", "*.png;*.jpeg;*.jpg;*.bmp;*.gif")],
             )
         )
 
@@ -331,7 +331,10 @@ class App(customtkinter.CTk):
         """This method will prompt the user to choose an image to use as watermark. It then saves the path of selected
         image to current_image_watermark_path variable.
         """
-        self.current_image_watermark_path = askopenfilename(title="Choose the watermark image you want to use")
+        self.current_image_watermark_path = askopenfilename(
+            title="Choose the watermark image you want to use",
+            filetypes=[("image files", "*.png;*.jpeg;*.jpg;*.bmp;*.gif")],
+        )
         if self.current_image_watermark_path:
             self.controls_frame.watermark_location_entry.configure(state="normal")
             self.controls_frame.watermark_location_entry.delete(0, "end")
